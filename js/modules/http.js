@@ -1,8 +1,9 @@
-export const API_URL = "https://loto-server-new.onrender.com/api";
+// export const API_URL = "https://app.24loto.com/api";
 // export const API_URL = "http://localhost:5001/api";
+export const API_URL = "http://loto-server-new.onrender.com/api";
 
 const $api = axios.create({
-  withCredentials: true,
+  withCredentials: false,
   baseURL: API_URL,
 });
 
@@ -57,7 +58,7 @@ export async function login(loginData) {
 export async function updateAuth() {
   try {
     const response = await axios.get(`${API_URL}/refresh`, {
-      withCredentials: true,
+      withCredentials: false,
     });
 
     localStorage.setItem("token", response.data.accessToken);
@@ -414,6 +415,26 @@ export async function updateUserData(name, email) {
       name,
       email,
     });
+    return await response;
+  } catch (e) {
+    console.log(e.response);
+    return await e.response;
+  }
+}
+
+export async function getPlayedGames() {
+  try {
+    const response = await $api.get(`/played-games`);
+    return await response;
+  } catch (e) {
+    console.log(e.response);
+    return await e.response;
+  }
+}
+
+export async function getDominoStatus() {
+  try {
+    const response = await $api.get("/game/domino-status");
     return await response;
   } catch (e) {
     console.log(e.response);

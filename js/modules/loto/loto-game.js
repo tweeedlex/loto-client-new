@@ -307,15 +307,17 @@ export async function openGamePage(
 
   // добавляем функционал на кнопку "авто игра"
   const autoButton = document.querySelector(".loto-gameinfo__auto-button");
-  autoButton.addEventListener("click", () => {
-    if (autoButton.classList.contains("active")) {
-      autoButton.classList.remove("active");
-      localStorage.setItem("auto-play", false);
-    } else {
-      autoButton.classList.add("active");
-      localStorage.setItem("auto-play", true);
-    }
-  });
+  if (autoButton) {
+    autoButton.addEventListener("click", () => {
+      if (autoButton.classList.contains("active")) {
+        autoButton.classList.remove("active");
+        localStorage.setItem("auto-play", false);
+      } else {
+        autoButton.classList.add("active");
+        localStorage.setItem("auto-play", true);
+      }
+    });
+  }
 
   let autoPlay = localStorage.getItem("auto-play");
   if (autoPlay == "true") {

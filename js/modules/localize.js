@@ -1,5 +1,5 @@
 const loadLocalizationFile = async () => {
-  const localize = await fetch("./js/modules/localize.json");
+  const localize = await fetch("./json/localize.json");
   let localizationFile = await localize.json();
   return localizationFile;
 };

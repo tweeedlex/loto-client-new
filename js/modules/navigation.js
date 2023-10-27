@@ -34,40 +34,24 @@ export function addListeners(ws) {
 }
 
 export async function addHashListeners(ws = null) {
-  // location.hash = "#";
   if (header.classList.contains("d-none")) {
     header.classList.remove("d-none");
     mainContainer.classList.add("header__padding");
   }
 
-  // проверяем или есть у нас тикеты и кидаем куда надо
-  const ticketsResponce = await impHttp.getTickets();
-  if (ticketsResponce.status == 200) {
-    let userTickets = ticketsResponce.data;
-    if (
-      userTickets.length > 0 &&
-      !location.hash.includes("loto-game") &&
-      !location.hash.includes("loto-room")
-    ) {
-      const roomId = userTickets[0].gameLevel;
-      const isGameStartedRes = await impHttp.isGameStarted(roomId);
-      if (isGameStartedRes.status == 200) {
-        let isGameStarted = isGameStartedRes.data;
-        if (JSON.parse(isGameStarted) == true) {
-          location.hash = `#loto-game-${roomId}`;
-        } else {
-          location.hash = `#loto-room-${roomId}`;
-        }
-      } else {
-        if (!preloader.classList.contains("d-none")) {
-          preloader.classList.add("d-none");
-        }
-      }
-    } else {
-      if (!preloader.classList.contains("d-none")) {
-        preloader.classList.add("d-none");
-      }
+  let currentGames = await checkUserCurrentGames();
+  console.log(currentGames);
 
+  switch (currentGames.currGame) {
+    case "free":
+      preloader.classList.add("d-none");
+      break;
+    case "loto":
+      if (currentGames.gameStarted) {
+        location.hash = `#loto-game-${currentGames.roomId}`;
+      } else {
+        location.hash = `#loto-room-${currentGames.roomId}`;
+      }
       const localItemsToClear = JSON.parse(
         localStorage.getItem("localItemsToClear")
       );
@@ -77,11 +61,14 @@ export async function addHashListeners(ws = null) {
         });
         localStorage.removeItem("localItemsToClear");
       }
-    }
-  } else {
-    if (!preloader.classList.contains("d-none")) {
-      preloader.classList.add("d-none");
-    }
+      // preloader.classList.add("d-none");
+      break;
+    case "domino":
+      window.location.hash = `domino-room-table/${currentGames.roomId}/${
+        currentGames.tableId
+      }/${currentGames.playerMode}/${currentGames.gameMode.toUpperCase()}`;
+      // preloader.classList.add("d-none");
+      break;
   }
 
   // на изменение хеша
@@ -106,7 +93,39 @@ export async function hashNavigation() {
     mainContainer.classList.add("header__padding");
   }
 
+  preloader.classList.remove("d-none");
+
   let hash = location.hash;
+
+  let currentGames = await checkUserCurrentGames();
+  switch (currentGames.currGame) {
+    case "free":
+      preloader.classList.add("d-none");
+      break;
+    case "loto":
+      if (currentGames.gameStarted) {
+        location.hash = `#loto-game-${currentGames.roomId}`;
+      } else {
+        location.hash = `#loto-room-${currentGames.roomId}`;
+      }
+      const localItemsToClear = JSON.parse(
+        localStorage.getItem("localItemsToClear")
+      );
+      if (localItemsToClear) {
+        localItemsToClear.forEach((item) => {
+          localStorage.removeItem(item);
+        });
+        localStorage.removeItem("localItemsToClear");
+      }
+      // preloader.classList.add("d-none");
+      break;
+    case "domino":
+      window.location.hash = `domino-room-table/${currentGames.roomId}/${
+        currentGames.tableId
+      }/${currentGames.playerMode}/${currentGames.gameMode.toUpperCase()}`;
+      // preloader.classList.add("d-none");
+      break;
+  }
 
   if (!hash || hash == "" || hash == "#") {
     let navMenu = document.querySelector(".menu-footer");
@@ -118,79 +137,27 @@ export async function hashNavigation() {
     // закрыть вебсокет если он открыт
 
     console.log(websocket);
-    if (websocket && websocket.readyState == 1) {
-      websocket.close(
-        3001,
-        JSON.stringify({
-          // roomId,
-          // bet: bet,
-          userId: localUser.userId,
-          username: localUser.username,
-          method: "disconnectGame",
-          page: "mainLotoPage",
-        })
-      );
+    // if (websocket && websocket.readyState == 1) {
+    //   websocket.close(
+    //     3001,
+    //     JSON.stringify({
+    //       // roomId,
+    //       // bet: bet,
+    //       userId: localUser.userId,
+    //       username: localUser.username,
+    //       method: "disconnectGame",
+    //       page: "mainLotoPage",
+    //     })
+    //   );
+    // }
+    let mainPage = document.querySelector("#loto");
+    if (!mainPage) {
+      redirectToMainPage();
     }
-
-    redirectToMainPage();
-    preloader.classList.remove("d-none");
-
-    const ticketsResponce = await impHttp.getTickets();
-    if (ticketsResponce.status == 200) {
-      let userTickets = ticketsResponce.data;
-      if (
-        userTickets.length > 0 &&
-        !location.hash.includes("loto-game") &&
-        !location.hash.includes("loto-room")
-      ) {
-        const roomId = userTickets[0].gameLevel;
-        const isGameStartedRes = await impHttp.isGameStarted(roomId);
-        // preloader.classList.add("d-none");
-        if (isGameStartedRes.status == 200) {
-          let isGameStarted = isGameStartedRes.data;
-          if (JSON.parse(isGameStarted) == true) {
-            location.hash = `#loto-game-${roomId}`;
-          } else {
-            location.hash = `#loto-room-${roomId}`;
-          }
-        } else {
-          if (!preloader.classList.contains("d-none")) {
-            preloader.classList.add("d-none");
-          }
-        }
-        // location.hash = `#loto-room-${roomId}`;
-      } else {
-        if (!preloader.classList.contains("d-none")) {
-          preloader.classList.add("d-none");
-        }
-      }
-    } else {
-      if (!preloader.classList.contains("d-none")) {
-        preloader.classList.add("d-none");
-      }
-    }
+    // preloader.classList.remove("d-none");
   } else if (hash.includes("loto-room")) {
     // open loto room waiting page if game is not started
     const roomId = Number(hash.split("-")[2][0]);
-
-    const ticketsResponce = await impHttp.getTickets();
-    const isGameStartedRes = await impHttp.isGameStarted(roomId);
-
-    if (ticketsResponce.status == 200 && isGameStartedRes.status == 200) {
-      let userTickets = ticketsResponce.data;
-      let isGameStarted = isGameStartedRes.data;
-      if (userTickets.length > 0 && isGameStarted == true) {
-        let userTicketsRoomId = userTickets[0].gameLevel;
-        location.hash = `#loto-game-${userTicketsRoomId}`;
-      } else if (userTickets.length > 0 && isGameStarted == false) {
-        let userTicketsRoomId = userTickets[0].gameLevel;
-        if (roomId != userTicketsRoomId) {
-          location.hash = `#loto-room-${userTicketsRoomId}`;
-        }
-      } else if (isGameStarted == true && userTickets == 0) {
-        location.hash = "";
-      }
-    }
 
     const bet = impLotoGame.getBetByRoomId(roomId);
     websocket.send(
@@ -215,27 +182,6 @@ export async function hashNavigation() {
     const query = new URLSearchParams(hash.split("?")[1]);
     const roomId = Number(hash.split("-")[2].split("?")[0]);
 
-    // проверка на хеш и билеты
-
-    const ticketsResponce = await impHttp.getTickets();
-    const isGameStartedRes = await impHttp.isGameStarted(roomId);
-    if (ticketsResponce.status == 200 && isGameStartedRes.status == 200) {
-      let userTickets = ticketsResponce.data;
-      let isGameStarted = isGameStartedRes.data;
-
-      if (userTickets.length > 0 && isGameStarted == true) {
-        let userTicketsRoomId = userTickets[0].gameLevel;
-        if (roomId != userTicketsRoomId) {
-          location.hash = `#loto-game-${userTicketsRoomId}`;
-        }
-      } else if (userTickets.length > 0 && isGameStarted == false) {
-        let userTicketsRoomId = userTickets[0].gameLevel;
-        location.hash = `#loto-room-${userTicketsRoomId}`;
-      } else if (isGameStarted == true && userTickets == 0) {
-        location.hash = "";
-      }
-    }
-
     // даные об игре
     const bet = impLotoGame.getBetByRoomId(roomId);
     const bank = Number(query.get("bank")).toFixed(2);
@@ -243,7 +189,7 @@ export async function hashNavigation() {
     const online = Number(query.get("online"));
     const isJackpotPlaying = JSON.parse(query.get("isJackpotPlaying"));
 
-    websocket.send(
+    window.ws.send(
       JSON.stringify({
         roomId,
         bet: bet,
@@ -270,22 +216,16 @@ export async function hashNavigation() {
     );
     // ============= DOMINO ============== //
   } else if (hash == "#domino-choose") {
+    let navMenu = document.querySelector(".menu-footer");
+    if (navMenu) {
+      const navButtons = navMenu.querySelectorAll(".active");
+      navButtons.forEach((button) => button.classList.remove("active"));
+      let openGamesLobbyBtn = document.querySelector(".open-games-menu");
+      openGamesLobbyBtn.classList.add("active");
+    }
+
     impDominoNav.openDominoChoosePage();
   } else if (hash == "#domino-menu") {
-    if (websocket && websocket.readyState == 1) {
-      console.log("close ws");
-      websocket.close(
-        3001,
-        JSON.stringify({
-          // roomId,
-          // bet: bet,
-          userId: localUser.userId,
-          username: localUser.username,
-          method: "disconnectGame",
-          page: "mainDominoPage",
-        })
-      );
-    }
     setTimeout(() => {
       impDominoNav.openDominoMenuPage(true, null, "CLASSIC");
     }, 50);
@@ -294,7 +234,6 @@ export async function hashNavigation() {
   } else if (hash.includes("#domino-room-table")) {
     console.log(hash);
     hideNavigation();
-
     const dominoRoomId = +hash.split("/")[1];
     const tableId = +hash.split("/")[2];
     const playerMode = +hash.split("/")[3];
@@ -311,6 +250,8 @@ export async function hashNavigation() {
         method: "connectDomino",
       })
     );
+
+    preloader.classList.add("d-none");
   }
 
   let navMenu = document.querySelector(".menu-footer");
@@ -322,9 +263,9 @@ export async function hashNavigation() {
   switch (hash) {
     case "#leaders":
       // impLeadersFunc.openLeadersMenuPage();
-      if (preloader.classList.contains("d-none")) {
-        preloader.classList.remove("d-none");
-      }
+      // if (preloader.classList.contains("d-none")) {
+      //   preloader.classList.remove("d-none");
+      // }
       mainContainer.classList.add("header__padding");
       mainContainer.classList.add("footer__padding");
       header.classList.remove("d-none");
@@ -337,9 +278,9 @@ export async function hashNavigation() {
       break;
 
     case "#profile":
-      if (preloader.classList.contains("d-none")) {
-        preloader.classList.remove("d-none");
-      }
+      // if (preloader.classList.contains("d-none")) {
+      //   preloader.classList.remove("d-none");
+      // }
 
       impProfileFunc.openProfilePage();
       header.classList.add("d-none");
@@ -920,7 +861,8 @@ export function pageNavigation(ws) {
     openGamesLobbyBtn.addEventListener("click", function () {
       let isCurrGameMenuPage = document.querySelector(".games");
       if (!isCurrGameMenuPage) {
-        location.hash = "";
+        location.hash = "#";
+        redirectToMainPage();
         ws.send(
           JSON.stringify({
             username: localUser.username,
@@ -1189,4 +1131,75 @@ function openPrivacyPolicyPage() {
     location.hash = "";
     location.reload();
   });
+}
+// console.log();
+export async function checkUserCurrentGames() {
+  let message = { currGame: null };
+
+  // проверка на лото
+  const ticketsResponce = await impHttp.getTickets();
+  if (ticketsResponce.status == 200) {
+    let userTickets = ticketsResponce.data;
+    if (userTickets.length > 0 && !location.hash.includes("loto-game")) {
+      const roomId = userTickets[0].gameLevel;
+      const isGameStartedRes = await impHttp.isGameStarted(roomId);
+      if (isGameStartedRes.status == 200) {
+        let isGameStarted = isGameStartedRes.data;
+        if (JSON.parse(isGameStarted) == true) {
+          message.currGame = "loto";
+          message.roomId = roomId;
+          message.gameStarted = true;
+          return message;
+        } else {
+          message.currGame = "loto";
+          message.roomId = roomId;
+          message.gameStarted = false;
+          return message;
+        }
+      } else {
+        // message.currGame = "free";
+        // return message;
+      }
+    } else {
+      const localItemsToClear = JSON.parse(
+        localStorage.getItem("localItemsToClear")
+      );
+      if (localItemsToClear) {
+        localItemsToClear.forEach((item) => {
+          localStorage.removeItem(item);
+        });
+        localStorage.removeItem("localItemsToClear");
+      }
+      // message.currGame = "free";
+      // return message;
+    }
+  }
+
+  // проверка на активные игры домино
+  const dominoResponse = await impHttp.getDominoStatus();
+  if (dominoResponse.status == 200) {
+    const inDominoGameStatus = dominoResponse.data.message;
+    if (inDominoGameStatus) {
+      const { roomId, tableId, playerMode, gameMode } =
+        dominoResponse.data.roomInfo;
+      message.currGame = "domino";
+      message.roomId = roomId;
+      message.tableId = tableId;
+      message.playerMode = playerMode;
+      message.gameMode = gameMode.toUpperCase();
+      message.gameStarted = true;
+      return message;
+    } else {
+      // message.currGame = "free";
+      // return message;
+    }
+  } else {
+    // message.currGame = "free";
+    // return message;
+  }
+
+  if (message.currGame == null) {
+    message.currGame = "free";
+    return message;
+  }
 }

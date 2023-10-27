@@ -112,3 +112,21 @@ export const playRating = () => {
   rating.volume = menuVolume;
   rating.play();
 };
+
+export const playTelephonePoints = () => {
+  const points = new Audio(`${path}/domino/points-telephone.mp3`);
+  points.volume = gameVolume;
+  points.play();
+}
+
+export const playGameStarted = () => {
+  const gameStarted = new Audio(`${path}/domino/game-started.mp3`);
+  gameStarted.volume = gameVolume;
+  gameStarted.play();
+}
+
+export const playPlaceTile = () => {
+  const placeTile = new Audio(`${path}/domino/place-tile.mp3`);
+  placeTile.volume = gameVolume;
+  placeTile.play();
+}

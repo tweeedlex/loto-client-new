@@ -1,46 +1,6 @@
 import * as impHttp from "../http.js";
 import * as impPopup from "./popup.js";
 
-export function openLeadersMenuPage() {
-  let siteLanguage = window.siteLanguage;
-  let main = document.querySelector("main");
-  if (main) {
-    main.innerHTML = `<div class="main__container">
-    <section class="leader-menu-page">
-      <div class="leader-page-main">
-        <div class="leader-page-menu">
-          <div class="leader-page-menu__item" game-type = "loto">
-            <img src="img/loto-img.png" alt="" /><span>Лидеры лото</span>
-          </div>
-          <div class="leader-page-menu__item" game-type = "domino" >
-            <img src="img/loto-img.png" alt="" /><span>Лидеры домино</span>
-          </div>
-          <div class="leader-page-menu__item" game-type = "nards">
-            <img src="img/loto-img.png" alt="" /><span>Лидеры нардов</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>`;
-  }
-
-  leadersMenuPageFunc();
-}
-
-async function leadersMenuPageFunc() {
-  let leadersPageMenu = document.querySelector(".leader-page-menu");
-  let leadersMenuOptions = leadersPageMenu.querySelectorAll(
-    ".leader-page-menu__item"
-  );
-
-  leadersMenuOptions.forEach((menuOption) => {
-    menuOption.addEventListener("click", function () {
-      let gameType = menuOption.getAttribute("game-type");
-      openLeadersPage(gameType);
-    });
-  });
-}
-
 export async function openLeadersPage(gameType) {
   let siteLanguage = window.siteLanguage;
   let preloader = document.querySelector(".page-preloader");
@@ -73,13 +33,13 @@ export async function openLeadersPage(gameType) {
             ${siteLanguage.statsPage.informationButtonText}
           </button>
           <div class="leader-page__games">
-            <button>
+            <button class = "leaders__button" leadersType = "loto">
               <img src="img/leader icons/loto.png" alt="" />${siteLanguage.statsPage.menuHeader.gameLotoText}
             </button>
-            <button>
+            <button class = "leaders__button" leadersType = "nards">
               <img src="img/leader icons/nards.png" alt="" />${siteLanguage.statsPage.menuHeader.gameNardsText}
             </button>
-            <button>
+            <button class = "leaders__button" leadersType = "domino">
               <img src="img/leader icons/domino.png" alt="" />${siteLanguage.statsPage.menuHeader.gameBackgamonsText}
             </button>
             <div class="leader-page-games__season">
@@ -96,12 +56,20 @@ export async function openLeadersPage(gameType) {
           <div class="table-header__bonuses">${siteLanguage.statsPage.tableHeader.bonusesText}</div>
         </div>
         <div class="leader-page__table-main-wrapper">
-        <div class="leader-page__table-main">
-          
-        </div>
+          <div class="leader-page__table-main">
+          </div>
         </div>
       </section>
    </div>`;
+
+    // loto default
+    const chooseGameButtons = document.querySelectorAll(".leaders__button");
+    chooseGameButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const gameType = button.getAttribute("leaderstype");
+        openLeadersPage(gameType);
+      });
+    });
 
     let lotoLeaders = await impHttp.getGameLeaders(gameType);
 
@@ -128,6 +96,7 @@ export async function openLeadersPage(gameType) {
 
   // создание победителей в таблицу
   function createLeaderesTable(table, data, tableElementWrapper) {
+    console.log("LEADERS DATA:", data);
     // sort data by tokens amount from max to min
 
     data = data.sort((a, b) => {
@@ -139,7 +108,12 @@ export async function openLeadersPage(gameType) {
 
     // создаем елементы в таблицу
 
-    for (let index = 0; index < 100; index++) {
+    let dataLength = data.length;
+    if (dataLength > 100) {
+      dataLength = 100;
+    }
+
+    for (let index = 0; index < dataLength; index++) {
       const userObject = data[index];
 
       let userElement = document.createElement("div");
@@ -221,14 +195,6 @@ export async function openLeadersPage(gameType) {
           tableElementWrapper.appendChild(userElement);
         }
       }
-    });
-  }
-
-  // функции выхода обратно, с таблици лидеров в меню
-  let buttonBack = document.querySelector(".leader-page__back");
-  if (buttonBack) {
-    buttonBack.addEventListener("click", function () {
-      openLeadersMenuPage();
     });
   }
 }

@@ -1,5 +1,6 @@
 import * as lotoNav from "../loto/loto-navigation.js";
 import * as impPopup from "../pages/popup.js";
+import * as impAudio from "../audio.js";
 let activeTurnTimers = [];
 
 export const setDominoTableInfo = (msg) => {
@@ -14,6 +15,17 @@ export const setDominoTableInfo = (msg) => {
   const marketBlock = document.querySelector(".domino-table-store__score");
   marketBlock.innerHTML = msg.market.length;
   let emenyPlayerNum = 1;
+
+  const existingEnemyPlayers = tableBlock.querySelectorAll(
+    ".domino-game-table__enemy-player"
+  );
+
+  if (existingEnemyPlayers) {
+    existingEnemyPlayers.forEach((enemy) => {
+      enemy.remove();
+    });
+  }
+
   msg.players.forEach((player, i) => {
     if (!(player.userId == userId)) {
       tableBlock.innerHTML += `
@@ -29,7 +41,7 @@ export const setDominoTableInfo = (msg) => {
         </div>
         <div class="domino-enemy-player__info">
           <h2 class="domino-enemy-player__name">${player.username}</h2>
-          <span class="domino-enemy-player__score">${player.score}/50</span>
+          <span class="domino-enemy-player__score">${player.score}/165</span>
         </div>
       </div>
       `;
@@ -38,87 +50,1667 @@ export const setDominoTableInfo = (msg) => {
     }
   });
 
+  const enemyScores = tableBlock.querySelectorAll(
+    ".domino-enemy-player__score"
+  );
+
+  const gameMode =
+    location.hash.split("/")[location.hash.split("/").length - 1];
+  if (gameMode == "CLASSIC") {
+    enemyScores.forEach((enemyScore) => {
+      enemyScore.remove();
+    });
+  }
+
   drawUserInfo(playerData, user);
   drawPlayerTiles(playerTilesArr);
 };
 
 export const updateGameScene = (scene, player) => {
-  console.log("SCENE:", scene);
-  let currClientGameScene = localStorage.getItem("dominoGameScene");
-  if (currClientGameScene) {
-    currClientGameScene = JSON.parse(currClientGameScene);
-  }
-
+  // console.log("SCENE:", scene);
+  // let currClientGameScene = localStorage.getItem("dominoGameScene");
+  // if (currClientGameScene) {
+  //   currClientGameScene = JSON.parse(currClientGameScene);
+  // }
+  impAudio.playPlaceTile();
   localStorage.setItem("dominoGameScene", JSON.stringify(scene));
-  drawGameScene(currClientGameScene, scene);
+
+  let gameMode = location.hash.split("/")[location.hash.split("/").length - 1];
+  if (gameMode.toUpperCase() == "CLASSIC") {
+    let newScene = scene[Math.floor(scene.length / 2)];
+    drawClassicGameScene(scene, newScene);
+  } else {
+    // drawGameScene(scene, scene);
+    drawTelephoneGameScene(scene);
+  }
 };
 
-const drawGameScene = (currScene, newScene, player) => {
-  let newLeftTiles = [];
-  let newRightTiles = [];
+function getVertical(scene) {
+  let verticalCoord = null;
+  scene.forEach((row, i) => {
+    row.forEach((tile, j) => {
+      if (
+        tile?.id >= 0 &&
+        !verticalCoord &&
+        i != Math.floor(scene.length / 2)
+      ) {
+        verticalCoord = j;
+        return;
+      }
+    });
+  });
+  let vertical = [];
+  if (verticalCoord) {
+    scene.forEach((row) => {
+      let tile = row[verticalCoord];
+      vertical.push(tile);
+    });
+  }
 
-  // draw first tile
+  // split vertical to top and bottom
 
-  // const tableBlock = document.querySelector(".domino-game-table__table");
-  // const existedTiles = tableBlock.querySelectorAll(".domino-game-table__tile");
-  // // console.log(existTiles, existedTiles.length);
-  // if (existedTiles.length == 0) {
-  //   tableBlock.innerHTML = "";
-  //   newScene.forEach((tile) => {
-  //     tableBlock.innerHTML += `
-  //     <div class="domino-game-table__tile ${
-  //       tile.rotate ? "rotated" : ""
-  //     }" tileid="${+tile.id}">
-  //       <div class="domino-game-table__tile-half domino-game-dots-${tile.left}">
-  //         ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
-  //       </div>
-  //       <div class="domino-game-table__tile-half domino-game-dots-${
-  //         tile.right
-  //       }">
-  //         ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
-  //       </div>
-  //     </div>
-  //     `;
-  //   });
-  //   return;
-  // }
+  let verticalTop = vertical.splice(0, Math.floor(scene.length / 2));
+  let verticalBottom = vertical.splice(1);
 
-  const tableBlock = document.querySelector(".domino-game-table__table");
-  const existedTiles = tableBlock.querySelectorAll(".domino-game-table__tile");
+  return { verticalTop, verticalBottom, verticalCoord };
+}
+
+const drawTelephoneGameScene = (scene, player = null) => {
+  let middleRow = scene[Math.floor(scene.length / 2)];
+
+  let { verticalTop, verticalBottom, verticalCoord } = getVertical(scene);
+  // console.log(verticalTop, verticalBottom, verticalCoord);
+
+  const tilesAmount = countTiles(scene);
 
   let blockTiles = [];
-  console.log(blockTiles);
-  const sceneLength = newScene.length;
+  // средний ряд главный
+  const block3tiles = middleRow.slice(
+    Math.floor(middleRow.length / 2) - 4,
+    Math.floor(middleRow.length / 2) + 4
+  );
 
-  if (sceneLength <= 8) {
-    blockTiles = [{ id: 3, tiles: newScene }];
-  } else if (sceneLength > 8 && sceneLength <= 12) {
-    blockTiles.push(
-      { id: 3, tiles: newScene.slice(0, 8) },
-      { id: 4, tiles: newScene.slice(8) }
+  // правая колонка вверх
+  const block4tiles = middleRow.slice(
+    Math.floor(middleRow.length / 2) + 4,
+    Math.floor(middleRow.length / 2) + 8
+  );
+
+  // верхний ряд
+  const block5tiles = middleRow.slice(Math.floor(middleRow.length / 2) + 8);
+
+  // левая колонка вниз
+  const block2tiles = middleRow.slice(
+    Math.floor(middleRow.length / 2) - 8,
+    Math.floor(middleRow.length / 2) - 4
+  );
+
+  // нижний ряд
+  const block1tiles = middleRow.slice(0, Math.floor(middleRow.length / 2) - 8);
+
+  // console.log(block3tiles);
+  // console.log(block4tiles);
+
+  blockTiles.push({ id: 3, tiles: block3tiles });
+  blockTiles.push({ id: 4, tiles: block4tiles });
+  blockTiles.push({ id: 5, tiles: block5tiles });
+  blockTiles.push({ id: 2, tiles: block2tiles });
+  blockTiles.push({ id: 1, tiles: block1tiles });
+
+  let insertingBlocks = document.querySelectorAll(
+    ".domino-game-table__table-tiles-block"
+  );
+
+  const tableBlock = document.querySelector(".domino-game-table__table");
+
+  if (insertingBlocks.length < 5) {
+    tableBlock.innerHTML = `
+      <div id="1" class="domino-game-table__table-tiles-block-1 domino-game-table__table-tiles-block"></div>
+      <div id="2" class="domino-game-table__table-tiles-block-2 domino-game-table__table-tiles-block"></div>
+      <div id="3" class="domino-game-table__table-tiles-block-3 domino-game-table__table-tiles-block"></div>
+      <div id="4" class="domino-game-table__table-tiles-block-4 domino-game-table__table-tiles-block"></div>
+      <div id="5" class="domino-game-table__table-tiles-block-5 domino-game-table__table-tiles-block"></div>
+      <div id="6" class="domino-game-table__table-tiles-block-6 domino-game-table__table-tiles-block"></div>
+      <div id="7" class="domino-game-table__table-tiles-block-7 domino-game-table__table-tiles-block"></div>
+      <div id="8" class="domino-game-table__table-tiles-block-8 domino-game-table__table-tiles-block"></div>
+      <div id="9" class="domino-game-table__table-tiles-block-9 domino-game-table__table-tiles-block"></div>
+    `;
+    insertingBlocks = document.querySelectorAll(
+      ".domino-game-table__table-tiles-block"
     );
-  } else if (sceneLength > 12 && sceneLength <= 16) {
-    blockTiles.push(
-      { id: 3, tiles: newScene.slice(0, 8) },
-      { id: 4, tiles: newScene.slice(8, 12) },
-      { id: 5, tiles: newScene.slice(12) }
+  }
+  insertingBlocks.forEach((block) => {
+    block.innerHTML = "";
+  });
+
+  blockTiles.forEach((block) => {
+    const insertingBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
     );
-  } else if (sceneLength > 16 && sceneLength < 22) {
-    newScene = newScene.reverse();
-    blockTiles.push(
-      { id: 5, tiles: newScene.slice(0, 6) },
-      { id: 4, tiles: newScene.slice(6, 10) },
-      { id: 3, tiles: newScene.slice(10, 18) },
-      { id: 2, tiles: newScene.slice(18) }
+    if (insertingBlock) {
+      insertingBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          insertingBlock.innerHTML += `
+          <div class="domino-game-table__tile ${
+            tile.rotate ? "rotated" : ""
+          }" tileid="${+tile.id}">
+            <div class="domino-game-table__tile-half domino-game-dots-${
+              tile.left
+            }">
+              ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+            </div>
+            <div class="domino-game-table__tile-half domino-game-dots-${
+              tile.right
+            }">
+              ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+            </div>
+          </div>
+          `;
+        }
+      });
+    }
+  });
+
+  tablePlacement();
+  if (verticalCoord) {
+    placeVerticalTiles(scene, verticalTop, verticalBottom, verticalCoord);
+  }
+  edgeControl();
+};
+
+function getVerticalOriginBlock(scene, verticalIndex) {
+  let middleRow = scene[Math.floor(scene.length / 2)];
+
+  if (
+    verticalIndex >= Math.floor(middleRow.length / 2) - 4 &&
+    verticalIndex < Math.floor(middleRow.length / 2) + 4
+  ) {
+    if (verticalIndex == Math.floor(middleRow.length / 2) - 4) {
+      return { block: 3, left: true, right: false };
+    }
+    if (verticalIndex == Math.floor(middleRow.length / 2) + 3) {
+      return { block: 3, left: false, right: true };
+    }
+    return { block: 3, left: false, right: false };
+  }
+
+  if (
+    verticalIndex >= Math.floor(middleRow.length / 2) + 4 &&
+    verticalIndex < Math.floor(middleRow.length / 2) + 8
+  ) {
+    if (verticalIndex == Math.floor(middleRow.length / 2) + 4) {
+      return { block: 4, left: true, right: false };
+    }
+    if (verticalIndex == Math.floor(middleRow.length / 2) + 7) {
+      return { block: 4, left: false, right: true };
+    }
+    return { block: 4, left: false, right: false };
+  }
+
+  if (verticalIndex >= Math.floor(middleRow.length / 2) + 8) {
+    if (verticalIndex == Math.floor(middleRow.length / 2) + 8) {
+      return { block: 5, left: false, right: true };
+    }
+    return { block: 5, left: false, right: false };
+  }
+
+  if (
+    verticalIndex >= Math.floor(middleRow.length / 2) - 8 &&
+    verticalIndex < Math.floor(middleRow.length / 2) - 4
+  ) {
+    if (verticalIndex == Math.floor(middleRow.length / 2) - 8) {
+      return { block: 2, left: true, right: false };
+    }
+    // console.log(verticalIndex);
+    if (verticalIndex == Math.floor(middleRow.length / 2) - 5) {
+      return { block: 2, left: false, right: true };
+    }
+    return { block: 2, left: false, right: false };
+  }
+
+  if (verticalIndex < Math.floor(middleRow.length / 2) - 8) {
+    if (verticalIndex == Math.floor(middleRow.length / 2) - 9) {
+      return { block: 1, left: true, right: false };
+    }
+    return { block: 1, left: false, right: false };
+  }
+  return { block: null, left: false, right: false };
+}
+
+function placeVerticalTiles(scene, verticalTop, verticalBottom, verticalIndex) {
+  let middleRow = scene[Math.floor(scene.length / 2)];
+  const { block, left, right } = getVerticalOriginBlock(scene, verticalIndex);
+  const originTile = middleRow[verticalIndex];
+
+  const originTileBlock = document.querySelector(
+    `.domino-game-table__tile[tileid="${originTile.id}"]`
+  );
+
+  const parentBlock = document.querySelector(
+    `.domino-game-table__table-tiles-block-${block}`
+  );
+
+  let parentBlockLeft = +parentBlock.style.left.split("px")[0];
+
+  const allTilesInBlock = parentBlock.querySelectorAll(
+    ".domino-game-table__tile"
+  );
+
+  const leftTileBlocks = [];
+  allTilesInBlock.forEach((tile) => {
+    if (
+      middleRow.indexOf(
+        middleRow.find(
+          (middleTile) => middleTile.id == +tile.getAttribute("tileid")
+        )
+      ) < verticalIndex
+    ) {
+      leftTileBlocks.push(tile);
+    }
+  });
+
+  let leftPadding = 0;
+
+  leftTileBlocks.forEach((item) => {
+    leftPadding += item.offsetWidth;
+  });
+
+  const tableBlock = document.querySelector(".domino-game-table__table");
+
+  // console.log("block, left, right", block, left, right);
+
+  sceneMoving(scene, verticalTop, verticalBottom, block, left, right);
+
+  if (block == 3) {
+    placeVericalTilesBlock3(
+      verticalTop,
+      verticalBottom,
+      leftPadding,
+      tableBlock,
+      parentBlock,
+      parentBlockLeft,
+      originTileBlock,
+      block,
+      right,
+      left
     );
-  } else if (sceneLength > 22 && sceneLength < 28) {
-    newScene = newScene.reverse();
+  }
+
+  if (block == 4) {
+    placeVericalTilesBlock4(
+      verticalTop,
+      verticalBottom,
+      leftPadding,
+      tableBlock,
+      parentBlock,
+      parentBlockLeft,
+      originTileBlock,
+      block,
+      right,
+      left
+    );
+  }
+
+  if (block == 2) {
+    placeVericalTilesBlock2(
+      verticalTop,
+      verticalBottom,
+      leftPadding,
+      tableBlock,
+      parentBlock,
+      parentBlockLeft,
+      originTileBlock,
+      block,
+      right,
+      left
+    );
+  }
+
+  if (block == 5) {
+    placeVericalTilesBlock5(
+      verticalTop,
+      verticalBottom,
+      leftPadding,
+      tableBlock,
+      parentBlock,
+      parentBlockLeft,
+      originTileBlock,
+      block,
+      right,
+      left
+    );
+  }
+
+  if (block == 1) {
+    placeVericalTilesBlock1(
+      verticalTop,
+      verticalBottom,
+      leftPadding,
+      tableBlock,
+      parentBlock,
+      parentBlockLeft,
+      originTileBlock,
+      block,
+      right,
+      left
+    );
+  }
+}
+function countTilesInDefaultArr(arr) {
+  let count = 0;
+  arr.forEach((item) => {
+    if (item?.id >= 0) {
+      count++;
+    }
+  });
+  return count;
+}
+
+window.addEventListener("resize", edgeControl);
+
+function edgeControl() {
+  const outerTableBlock = document.querySelector(".domino-game-table");
+  const tableBlock = document.querySelector(".domino-game-table__table");
+  const tableLeft = outerTableBlock.getBoundingClientRect().left;
+  const tableRight =
+    window.innerWidth - (tableLeft + outerTableBlock.offsetWidth);
+  const tableTop = outerTableBlock.getBoundingClientRect().top;
+  const tableBottom =
+    window.innerHeight - (tableTop + outerTableBlock.offsetHeight);
+  const tile = document.querySelector(".domino-game-table__tile");
+  let tileWidth;
+  if (tile) {
+    tileWidth =
+      tile.offsetWidth > tile.offsetHeight
+        ? tile.offsetWidth
+        : tile.offsetHeight;
+  } else {
+    tileWidth = 85;
+  }
+
+  const computedStyle = window.getComputedStyle(tableBlock);
+  const transform = computedStyle.transform || computedStyle.webkitTransform;
+  // Get scale by extracting the scaling factor from the transform matrix
+  const matrix = new DOMMatrix(transform);
+  const scale = matrix.a;
+  // Calculate the scaled width of tile
+  tileWidth = tileWidth * scale;
+  horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth);
+  verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth);
+}
+
+function verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth) {
+  let allBlocks = [];
+  for (let i = 1; i <= 9; i++) {
+    allBlocks.push(
+      document.querySelector(`.domino-game-table__table-tiles-block[id="${i}"]`)
+    );
+  }
+
+  // get the block that is closest to the top edge and that is closest to bottom edge
+  let closestTopBlock = allBlocks[0];
+  let closestBottomBlock = allBlocks[0];
+  allBlocks.forEach((block) => {
+    // check if block has tiles
+    if (block.innerHTML) {
+      if (
+        block.getBoundingClientRect().top <
+        closestTopBlock.getBoundingClientRect().top
+      ) {
+        closestTopBlock = block;
+      }
+      if (
+        window.innerHeight - block.getBoundingClientRect().top <
+        window.innerHeight - closestBottomBlock.getBoundingClientRect().top
+      ) {
+        closestBottomBlock = block;
+      }
+    }
+  });
+
+  const blockBottom =
+    window.innerHeight - closestBottomBlock.getBoundingClientRect().bottom;
+
+  const topDifference =
+    closestTopBlock.getBoundingClientRect().top - tableTop - 10;
+  const bottomDifference = blockBottom - tableBottom - 10;
+
+  const computedStyle = window.getComputedStyle(tableBlock);
+  const transform = computedStyle.transform;
+  const matrix = new DOMMatrix(transform);
+  const scale = matrix.a;
+
+  if (topDifference < 0 && bottomDifference > tileWidth) {
+    tableBlock.style.top = `${
+      (+tableBlock.style.top.split("px")[0] || 0) + tileWidth
+    }px`;
+    verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth);
+  } else if (topDifference < 0) {
+    tableBlock.style.transform = `scale(${scale - scale * 0.1})`;
+    verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth);
+  }
+
+  if (bottomDifference < 0 && topDifference > tileWidth) {
+    tableBlock.style.top = `${
+      (+tableBlock.style.top.split("px")[0] || 0) - tileWidth
+    }px`;
+    verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth);
+  } else if (bottomDifference < 0) {
+    tableBlock.style.transform = `scale(${scale - scale * 0.1})`;
+    verticalEdgeControl(tableBlock, tableTop, tableBottom, tileWidth);
+  }
+}
+
+function horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth) {
+  let allBlocks = [];
+  for (let i = 1; i <= 9; i++) {
+    allBlocks.push(
+      document.querySelector(`.domino-game-table__table-tiles-block[id="${i}"]`)
+    );
+  }
+
+  // get the block that is closest to the left edge and that is closest to right edge
+  let closestLeftBlock = allBlocks[0];
+  let closestRightBlock = allBlocks[0];
+  allBlocks.forEach((block) => {
+    // check if block has tiles
+    if (block.innerHTML) {
+      if (
+        block.getBoundingClientRect().left <
+        closestLeftBlock.getBoundingClientRect().left
+      ) {
+        closestLeftBlock = block;
+      }
+
+      if (
+        window.innerWidth - block.getBoundingClientRect().right <
+        window.innerWidth - closestRightBlock.getBoundingClientRect().right
+      ) {
+        closestRightBlock = block;
+      }
+    }
+  });
+
+  const blockRight =
+    window.innerWidth - closestRightBlock.getBoundingClientRect().right;
+
+  const leftDifference =
+    closestLeftBlock.getBoundingClientRect().left - tableLeft - 10;
+  const rightDifference = blockRight - tableRight - 10;
+
+  const tableBlockLeft = +tableBlock.style.translate.split("px")[0];
+
+  if (leftDifference < 0 && rightDifference > tileWidth) {
+    tableBlock.style.translate = `${tableBlockLeft + tileWidth}px`;
+    horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth);
+  } else if (leftDifference < 0) {
+    const computedStyle = window.getComputedStyle(tableBlock);
+    const transform = computedStyle.transform;
+    const matrix = new DOMMatrix(transform);
+    const scale = matrix.a;
+
+    tableBlock.style.transform = `scale(${scale - scale * 0.1})`;
+    horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth);
+  }
+
+  if (rightDifference < 0 && leftDifference > tileWidth) {
+    tableBlock.style.translate = `${tableBlockLeft - tileWidth}px`;
+    horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth);
+  } else if (rightDifference < 0) {
+    const computedStyle = window.getComputedStyle(tableBlock);
+    const transform = computedStyle.transform;
+    const matrix = new DOMMatrix(transform);
+    const scale = matrix.a;
+
+    tableBlock.style.transform = `scale(${scale - 0.1})`;
+    horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth);
+  }
+}
+
+function sceneMoving(scene, verticalTop, verticalBottom, block, left, right) {
+  const tableBlock = document.querySelector(".domino-game-table__table");
+  let verticalTopAmount = countTilesInDefaultArr(verticalTop);
+  let verticalBottomAmount = countTilesInDefaultArr(verticalBottom);
+  // console.log(verticalTop, verticalTopAmount);
+  // console.log(verticalBottom, verticalBottomAmount);
+
+  const middleTile =
+    scene[Math.floor(scene.length / 2)][Math.floor(scene[0].length / 2)];
+  const middleTileBlock = document.querySelector(
+    `.domino-game-table__tile[tileid="${middleTile.id}"]`
+  );
+  const tileWidth =
+    middleTileBlock.offsetWidth > middleTileBlock.offsetHeight
+      ? middleTileBlock.offsetWidth
+      : middleTileBlock.offsetHeight;
+
+  switch (block) {
+    case 3:
+      // console.log("now is block 3");
+      let desktopLimit = 5;
+      let tabletLimit = 5; // 768
+      let mobileLimit = 5;
+      let currWindowWidth = window.innerWidth;
+      // console.log(currWindowWidth + "curr width");
+
+      if (currWindowWidth >= 900) {
+        if (
+          verticalTopAmount > desktopLimit ||
+          verticalBottomAmount > desktopLimit
+        ) {
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.05 * (verticalTopAmount - desktopLimit);
+          let scaleNumberBottom =
+            1 - 0.05 * (verticalBottomAmount - desktopLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+        // desktopLimit;
+      } else if (currWindowWidth < 900 && currWindowWidth > 768) {
+        if (
+          verticalTopAmount > tabletLimit ||
+          verticalBottomAmount > desktopLimit
+        ) {
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.09 * (verticalTopAmount - desktopLimit);
+          let scaleNumberBottom =
+            1 - 0.09 * (verticalBottomAmount - desktopLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+        // tabletLimit;
+      } else if (currWindowWidth <= 768 && currWindowWidth > 600) {
+        if (
+          verticalTopAmount > tabletLimit ||
+          verticalBottomAmount > tabletLimit
+        ) {
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.09 * (verticalTopAmount - tabletLimit);
+          let scaleNumberBottom =
+            1 - 0.09 * (verticalBottomAmount - tabletLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+      } else if (currWindowWidth <= 600 && currWindowWidth >= 520) {
+        if (
+          verticalTopAmount > tabletLimit ||
+          verticalBottomAmount > tabletLimit
+        ) {
+          let newscaleNumber = 0;
+          if (verticalTopAmount > 7) {
+            let count = verticalTopAmount - tabletLimit - 7;
+            if (count > 0) {
+              newscaleNumber = 0.1 * (verticalTopAmount - 7);
+            }
+          }
+          // let scaleNumber = 1 - 0.09 * (verticalTopAmount - tabletLimit);
+          let scaleNumber = 1;
+
+          let scaleNumberTop = 1 - 0.09 * (verticalTopAmount - tabletLimit);
+          let scaleNumberBottom =
+            1 - 0.09 * (verticalBottomAmount - tabletLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+      } else if (currWindowWidth < 520 && currWindowWidth >= 425) {
+        if (
+          verticalTopAmount > tabletLimit ||
+          verticalBottomAmount > tabletLimit
+        ) {
+          // let newscaleNumber = 0;
+          // if (verticalTopAmount > 9) {
+          //   let count = verticalTopAmount - mobileLimit - 9;
+          //   if (count > 0) {
+          //     newscaleNumber = 0.1 * (verticalTopAmount - 9);
+          //   }
+          // }
+          // let scaleNumber = 1 - 0.07 * (verticalTopAmount - mobileLimit);
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.07 * (verticalTopAmount - desktopLimit);
+          let scaleNumberBottom =
+            1 - 0.07 * (verticalBottomAmount - desktopLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+      } else if (currWindowWidth < 425 && currWindowWidth > 375) {
+        if (verticalTopAmount > 4) {
+          let newscaleNumber = 0;
+          if (verticalTopAmount > 5) {
+            let count = verticalTopAmount - 5;
+            if (count > 0) {
+              newscaleNumber = 0.08 * (verticalTopAmount - 5);
+            }
+          }
+          // let scaleNumber = 1 - 0.07 * (verticalTopAmount - 4);
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.072 * (verticalTopAmount - desktopLimit);
+          let scaleNumberBottom =
+            1 - 0.072 * (verticalBottomAmount - desktopLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+      } else if (currWindowWidth <= 375) {
+        if (verticalTopAmount > 4) {
+          // let newscaleNumber = 0;
+          // if (verticalTopAmount > 9) {
+          //   let count = verticalTopAmount - 4 - 8;
+          //   if (count > 0) {
+          //     newscaleNumber = 0.9 * (verticalTopAmount - 8);
+          //   }
+          // }
+          // let scaleNumber = 1 - 0.07 * (verticalTopAmount - 4);
+          let scaleNumber = 1;
+          let scaleNumberTop = 1 - 0.07 * (verticalTopAmount - desktopLimit);
+          let scaleNumberBottom =
+            1 - 0.07 * (verticalBottomAmount - desktopLimit);
+          if (scaleNumberBottom < scaleNumberTop) {
+            scaleNumber = scaleNumberBottom;
+          } else {
+            scaleNumber = scaleNumberTop;
+          }
+          tableBlock.style.scale = `${scaleNumber}`;
+        }
+      }
+
+      break;
+  }
+}
+
+function placeVericalTilesBlock3(
+  verticalTop,
+  verticalBottom,
+  leftPadding,
+  tableBlock,
+  parentBlock,
+  parentBlockLeft,
+  originTileBlock,
+  block,
+  right,
+  left
+) {
+  let blockTiles = [];
+  let block7tiles = verticalTop.splice(0, verticalTop.length - 2);
+  let block6tiles = verticalTop.splice(0);
+  let block8tiles = verticalBottom.splice(0, 2);
+  let block9tiles = verticalBottom.splice(0);
+  blockTiles.push({ id: 6, tiles: block6tiles });
+  blockTiles.push({ id: 7, tiles: block7tiles });
+  blockTiles.push({ id: 8, tiles: block8tiles });
+  blockTiles.push({ id: 9, tiles: block9tiles });
+  blockTiles.forEach((block) => {
+    const newBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
+    );
+    // console.log(newBlock);
+    if (newBlock) {
+      newBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          newBlock.innerHTML += `
+        <div class="domino-game-table__tile ${
+          tile.rotate ? "rotated" : ""
+        }" tileid="${+tile.id}">
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.left
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+          </div>
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.right
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+          </div>
+        </div>
+        `;
+        }
+      });
+    }
+    tableBlock.appendChild(newBlock);
+  });
+
+  const newBlock6 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${6}"]`
+  );
+
+  const newBlock7 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${7}"]`
+  );
+  const newBlock8 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${8}"]`
+  );
+  const newBlock9 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${9}"]`
+  );
+
+  const block5 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${5}"]`
+  );
+  const block1 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${1}"]`
+  );
+
+  let block5Elements = block5.querySelectorAll(".domino-game-table__tile");
+  let block1Elements = block1.querySelectorAll(".domino-game-table__tile");
+
+  // нормальная x координата для перевернутой вертикально
+  let newBlock6XCoord =
+    parentBlockLeft +
+    leftPadding -
+    newBlock6.offsetWidth / 2 +
+    newBlock6.offsetHeight / 2 -
+    10;
+
+  let newBlock6YCoord =
+    tableBlock.offsetHeight / 2 -
+    newBlock6.offsetWidth / 2 -
+    newBlock6.offsetHeight -
+    10;
+
+  newBlock6.style.left = `${newBlock6XCoord}px`;
+  newBlock6.style.top = `${newBlock6YCoord}px`;
+  newBlock6.style.transform = `rotateZ(90deg)`;
+
+  let newBlock7XCoord = parentBlockLeft + leftPadding - newBlock7.offsetWidth;
+
+  let newBlock7YCoord =
+    tableBlock.offsetHeight / 2 -
+    newBlock6.offsetWidth / 2 -
+    parentBlock.offsetHeight -
+    originTileBlock.offsetHeight +
+    10;
+
+  newBlock7.style.left = `${newBlock7XCoord}px`;
+  newBlock7.style.top = `${newBlock7YCoord}px`;
+
+  // если 5 блок пустой то делаем ряд прямой =====================================================================================
+  if (block5Elements.length == 0) {
+  }
+
+  // =============================================================================================================================
+
+  // если начальний елемент с самого правого края
+  if (right) {
+    // нормальная x координата для перевернутой вертикально
+    newBlock6XCoord =
+      parentBlockLeft + leftPadding + originTileBlock.offsetWidth;
+
+    newBlock6YCoord = tableBlock.offsetHeight / 2 - newBlock6.offsetHeight / 2;
+
+    newBlock6.style.transform = `rotateZ(180deg)`;
+    newBlock6.style.left = `${newBlock6XCoord}px`;
+    newBlock6.style.top = `${newBlock6YCoord}px`;
+
+    newBlock7XCoord = newBlock6XCoord + newBlock6.offsetWidth;
+    newBlock7YCoord = newBlock6YCoord;
+
+    newBlock7.style.left = `${newBlock7XCoord}px`;
+    newBlock7.style.top = `${newBlock7YCoord}px`;
+    newBlock7.style.transform = `rotateZ(-180deg)`;
+  }
+
+  // нижний кусочек
+  let newBlock8XCoord =
+    parentBlockLeft +
+    leftPadding -
+    newBlock8.offsetWidth / 2 +
+    newBlock8.offsetHeight / 2 -
+    10;
+
+  let newBlock8YCoord =
+    tableBlock.offsetHeight / 2 +
+    parentBlock.offsetHeight / 2 +
+    newBlock8.offsetWidth / 2 -
+    newBlock8.offsetHeight / 2 +
+    10;
+
+  newBlock8.style.transform = `rotateZ(90deg)`;
+  newBlock8.style.left = `${newBlock8XCoord}px`;
+  newBlock8.style.top = `${newBlock8YCoord}px`;
+
+  let newBlock9XCoord =
+    parentBlockLeft + leftPadding + originTileBlock.offsetWidth;
+
+  let newBlock9YCoord =
+    tableBlock.offsetHeight / 2 +
+    parentBlock.offsetHeight +
+    originTileBlock.offsetHeight +
+    12;
+
+  newBlock9.style.left = `${newBlock9XCoord}px`;
+  newBlock9.style.top = `${newBlock9YCoord}px`;
+
+  // если начальний елемент с самого левого края
+  if (left) {
+    let newBlock8XCoord = parentBlockLeft - newBlock8.offsetWidth;
+    let newBlock8YCoord =
+      tableBlock.offsetHeight / 2 - newBlock6.offsetHeight / 2;
+
+    newBlock8.style.transform = `rotateZ(180deg)`;
+    newBlock8.style.left = `${newBlock8XCoord}px`;
+    newBlock8.style.top = `${newBlock8YCoord}px`;
+
+    let newBlock9XCoord = newBlock8XCoord - newBlock9.offsetWidth;
+
+    let newBlock9YCoord =
+      tableBlock.offsetHeight / 2 - newBlock6.offsetHeight / 2;
+
+    newBlock9.style.transform = `rotateZ(180deg)`;
+    newBlock9.style.left = `${newBlock9XCoord}px`;
+    newBlock9.style.top = `${newBlock9YCoord}px`;
+  }
+}
+
+function placeVericalTilesBlock5(
+  verticalTop,
+  verticalBottom,
+  leftPadding,
+  tableBlock,
+  parentBlock,
+  parentBlockLeft,
+  originTileBlock,
+  block,
+  right,
+  left
+) {
+  let blockTiles = [];
+  let block7tiles = verticalTop.splice(0, verticalTop.length - 2);
+  let block6tiles = verticalTop.splice(0);
+  let block8tiles = verticalBottom.splice(0);
+  blockTiles.push({ id: 6, tiles: block6tiles });
+  blockTiles.push({ id: 7, tiles: block7tiles });
+  blockTiles.push({ id: 8, tiles: block8tiles });
+  blockTiles.forEach((block) => {
+    const newBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
+    );
+    // console.log(newBlock);
+    if (newBlock) {
+      newBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          newBlock.innerHTML += `
+        <div class="domino-game-table__tile ${
+          tile.rotate ? "rotated" : ""
+        }" tileid="${+tile.id}">
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.left
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+          </div>
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.right
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+          </div>
+        </div>
+        `;
+        }
+      });
+    }
+    tableBlock.appendChild(newBlock);
+  });
+
+  const newBlock6 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${6}"]`
+  );
+
+  const newBlock7 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${7}"]`
+  );
+  const newBlock8 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${8}"]`
+  );
+
+  const main3Block = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${3}"]`
+  );
+
+  const block5 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${5}"]`
+  );
+  const block4 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${4}"]`
+  );
+  const block1 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${1}"]`
+  );
+
+  let block5Elements = block5.querySelectorAll(".domino-game-table__tile");
+  // find block5 tiles that are on the left of origin tile
+  const leftTileBlocks = [];
+  let flag = false;
+  block5Elements.forEach((tile) => {
+    if (
+      +originTileBlock.getAttribute("tileid") == +tile.getAttribute("tileid")
+    ) {
+      flag = true;
+    }
+    if (
+      !flag &&
+      +tile.getAttribute("tileid") != +originTileBlock.getAttribute("tileid")
+    ) {
+      leftTileBlocks.push(tile);
+    }
+  });
+
+  let leftVerticalPadding = 0;
+  leftTileBlocks.forEach((item) => {
+    leftVerticalPadding += item.offsetWidth;
+  });
+
+  // coordinates for non-rotated
+  // let newBlock6XCoord =
+  //   main3Block.offsetLeft +
+  //   main3Block.offsetWidth -
+  //   block4.offsetHeight -
+  //   leftPadding -
+  //   originTileBlock.offsetWidth +
+  //   10;
+
+  // let newBlock6YCoord =
+  //   tableBlock.offsetHeight / 2 -
+  //   block4.offsetWidth -
+  //   10 +
+  //   originTileBlock.offsetHeight / 2;
+
+  let newBlock6XCoord =
+    main3Block.offsetLeft +
+    main3Block.offsetWidth -
+    block4.offsetHeight -
+    leftPadding -
+    originTileBlock.offsetWidth +
+    10 -
+    newBlock6.offsetWidth / 2 +
+    newBlock6.offsetHeight / 2 -
+    5;
+
+  let newBlock6YCoord =
+    tableBlock.offsetHeight / 2 -
+    block4.offsetWidth +
+    originTileBlock.offsetHeight / 2 +
+    newBlock6.offsetWidth / 2 -
+    newBlock6.offsetHeight / 2;
+
+  newBlock6.style.left = `${newBlock6XCoord}px`;
+  newBlock6.style.top = `${newBlock6YCoord}px`;
+  newBlock6.style.transform = `rotateZ(-90deg)`;
+
+  let newBlock7XCoord =
+    main3Block.offsetLeft +
+    main3Block.offsetWidth -
+    block4.offsetHeight -
+    leftPadding -
+    originTileBlock.offsetWidth +
+    10 -
+    newBlock7.offsetWidth +
+    5;
+
+  let newBlock7YCoord = newBlock6YCoord + newBlock6.offsetHeight + 5;
+
+  newBlock7.style.left = `${newBlock7XCoord}px`;
+  newBlock7.style.top = `${newBlock7YCoord}px`;
+
+  let newBlock8XCoord =
+    main3Block.offsetLeft +
+    main3Block.offsetWidth -
+    block4.offsetHeight -
+    leftPadding -
+    originTileBlock.offsetWidth +
+    5 -
+    newBlock8.offsetWidth / 2 +
+    newBlock8.offsetHeight / 2;
+
+  let newBlock8YCoord =
+    tableBlock.offsetHeight / 2 -
+    block4.offsetWidth -
+    originTileBlock.offsetHeight / 2 +
+    newBlock8.offsetWidth / 2 -
+    newBlock8.offsetHeight / 2 -
+    newBlock8.offsetWidth;
+
+  newBlock8.style.left = `${newBlock8XCoord}px`;
+  newBlock8.style.top = `${newBlock8YCoord}px`;
+  newBlock8.style.transform = `rotateZ(-90deg)`;
+
+  if (right) {
+    // dont rotate first tile in the block5
+    const firstTile = block5.querySelector(".domino-game-table__tile");
+    firstTile.classList.remove("rotated");
+    // move 5 block to the left on half of tile
+    block5.style.left = `${block5.offsetLeft - firstTile.offsetWidth / 2}px`;
+    newBlock6.style.left = `${
+      newBlock6.offsetLeft - firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.left = `${
+      newBlock7.offsetLeft - firstTile.offsetWidth / 4
+    }px`;
+    newBlock6.style.top = `${
+      newBlock6.offsetTop - firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.top = `${
+      newBlock7.offsetTop - firstTile.offsetWidth / 4
+    }px`;
+    newBlock8.style.left = `${
+      newBlock8.offsetLeft - firstTile.offsetWidth / 4
+    }px`;
+    newBlock8.style.top = `${
+      newBlock8.offsetTop + firstTile.offsetWidth / 4
+    }px`;
+  }
+}
+
+function placeVericalTilesBlock1(
+  verticalTop,
+  verticalBottom,
+  leftPadding,
+  tableBlock,
+  parentBlock,
+  parentBlockLeft,
+  originTileBlock,
+  block,
+  right,
+  left
+) {
+  let blockTiles = [];
+  let block7tiles = verticalTop.splice(0, verticalTop.length - 2);
+  let block6tiles = verticalTop.splice(0);
+  let block8tiles = verticalBottom.splice(0);
+  blockTiles.push({ id: 6, tiles: block6tiles });
+  blockTiles.push({ id: 7, tiles: block7tiles });
+  blockTiles.push({ id: 8, tiles: block8tiles });
+  blockTiles.forEach((block) => {
+    const newBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
+    );
+    // console.log(newBlock);
+    if (newBlock) {
+      newBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          newBlock.innerHTML += `
+        <div class="domino-game-table__tile ${
+          tile.rotate ? "rotated" : ""
+        }" tileid="${+tile.id}">
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.left
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+          </div>
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.right
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+          </div>
+        </div>
+        `;
+        }
+      });
+    }
+    tableBlock.appendChild(newBlock);
+  });
+
+  const newBlock6 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${6}"]`
+  );
+
+  const newBlock7 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${7}"]`
+  );
+  const newBlock8 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${8}"]`
+  );
+
+  const main3Block = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${3}"]`
+  );
+
+  const block5 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${5}"]`
+  );
+  const block4 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${4}"]`
+  );
+  const block2 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${2}"]`
+  );
+  const block1 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${1}"]`
+  );
+
+  // find block1 tiles that are on the right of origin tile
+  let block1Elements = block1.querySelectorAll(".domino-game-table__tile");
+  block1Elements = Array.from(block1Elements).reverse();
+  let firstTile = block1Elements[0];
+  const leftTileBlocks = [];
+  let flag = false;
+
+  block1Elements.forEach((tile) => {
+    if (
+      +originTileBlock.getAttribute("tileid") == +tile.getAttribute("tileid")
+    ) {
+      flag = true;
+    }
+    if (
+      !flag &&
+      +tile.getAttribute("tileid") != +originTileBlock.getAttribute("tileid")
+    ) {
+      leftTileBlocks.push(tile);
+    }
+  });
+
+  let leftVerticalPadding = 0;
+  leftTileBlocks.forEach((item) => {
+    leftVerticalPadding += item.offsetWidth;
+  });
+
+  let newBlock6XCoord =
+    main3Block.offsetLeft +
+    leftVerticalPadding +
+    originTileBlock.offsetHeight / 2 -
+    newBlock6.offsetWidth / 2 +
+    newBlock6.offsetHeight / 2 -
+    12.5;
+
+  let newBlock6YCoord =
+    tableBlock.offsetHeight / 2 +
+    block2.offsetWidth -
+    originTileBlock.offsetHeight -
+    newBlock6.offsetWidth / 2 +
+    newBlock6.offsetHeight / 2 -
+    15;
+
+  newBlock6.style.left = `${newBlock6XCoord}px`;
+  newBlock6.style.top = `${newBlock6YCoord}px`;
+  newBlock6.style.transform = `rotateZ(90deg)`;
+
+  let newBlock7XCoord =
+    main3Block.offsetLeft +
+    leftVerticalPadding +
+    originTileBlock.offsetHeight -
+    5;
+
+  let newBlock7YCoord =
+    tableBlock.offsetHeight / 2 +
+    block2.offsetWidth -
+    originTileBlock.offsetHeight / 2 -
+    7.5 -
+    newBlock6.offsetWidth;
+
+  newBlock7.style.left = `${newBlock7XCoord}px`;
+  newBlock7.style.top = `${newBlock7YCoord}px`;
+  newBlock7.style.transform = `rotateZ(180deg)`;
+
+  let newBlock8XCoord =
+    main3Block.offsetLeft +
+    leftVerticalPadding +
+    originTileBlock.offsetHeight / 2 -
+    newBlock8.offsetWidth / 2 +
+    newBlock8.offsetHeight / 2 -
+    12.5;
+
+  let newBlock8YCoord =
+    tableBlock.offsetHeight / 2 +
+    block2.offsetWidth +
+    originTileBlock.offsetHeight / 2 +
+    newBlock8.offsetWidth / 2 -
+    newBlock8.offsetHeight / 2 -
+    5;
+
+  newBlock8.style.left = `${newBlock8XCoord}px`;
+  newBlock8.style.top = `${newBlock8YCoord}px`;
+  newBlock8.style.transform = `rotateZ(90deg)`;
+
+  // left doesn't work properly, check if first tile is double
+  const firstTileLeft = +firstTile
+    .querySelector(".domino-game-table__tile-half:first-child")
+    .classList[1].split("-")[3];
+  const firstTileRight = +firstTile
+    .querySelector(".domino-game-table__tile-half:last-child")
+    .classList[1].split("-")[3];
+  left = firstTileLeft == firstTileRight;
+  if (left) {
+    firstTile.classList.remove("rotated");
+    newBlock6.style.left = `${
+      newBlock6.offsetLeft + firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.left = `${
+      newBlock7.offsetLeft + firstTile.offsetWidth / 4
+    }px`;
+    newBlock6.style.top = `${
+      newBlock6.offsetTop + firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.top = `${
+      newBlock7.offsetTop + firstTile.offsetWidth / 4
+    }px`;
+    newBlock8.style.left = `${
+      newBlock8.offsetLeft + firstTile.offsetWidth / 4
+    }px`;
+    newBlock8.style.top = `${
+      newBlock8.offsetTop - firstTile.offsetWidth / 4
+    }px`;
+  }
+}
+
+function placeVericalTilesBlock4(
+  verticalTop,
+  verticalBottom,
+  leftPadding,
+  tableBlock,
+  parentBlock,
+  parentBlockLeft,
+  originTileBlock,
+  block,
+  right,
+  left
+) {
+  let blockTiles = [];
+  let block7tiles = verticalTop.splice(0);
+  let block6tiles = verticalBottom.splice(0);
+
+  blockTiles.push({ id: 6, tiles: block6tiles });
+  blockTiles.push({ id: 7, tiles: block7tiles });
+
+  blockTiles.forEach((block) => {
+    const newBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
+    );
+    // console.log("newBlock", newBlock);
+    if (newBlock) {
+      newBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          newBlock.innerHTML += `
+        <div class="domino-game-table__tile ${
+          tile.rotate ? "rotated" : ""
+        }" tileid="${+tile.id}">
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.left
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+          </div>
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.right
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+          </div>
+        </div>
+        `;
+        }
+      });
+    }
+    tableBlock.appendChild(newBlock);
+  });
+  // get all tiles that are on the right of origin tile
+  const allTilesInBlock = parentBlock.querySelectorAll(
+    ".domino-game-table__tile"
+  );
+  // console.log(allTilesInBlock);
+  const leftTileBlocks = [];
+  let flag = false;
+  allTilesInBlock.forEach((tile) => {
+    if (
+      +originTileBlock.getAttribute("tileid") == +tile.getAttribute("tileid")
+    ) {
+      flag = true;
+    }
+    if (
+      !flag &&
+      +tile.getAttribute("tileid") != +originTileBlock.getAttribute("tileid")
+    ) {
+      leftTileBlocks.push(tile);
+    }
+  });
+
+  let leftVerticalPadding = 0;
+  leftTileBlocks.forEach((item) => {
+    leftVerticalPadding += item.offsetWidth;
+  });
+
+  let main3Block = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${3}"]`
+  );
+
+  let main3BlockLeft = +main3Block.style.left.split("px")[0];
+
+  const newBlock6 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${6}"]`
+  );
+
+  const newBlock7 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${7}"]`
+  );
+
+  const block4 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${4}"]`
+  );
+  const block5 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${5}"]`
+  );
+
+  // нормальная x координата для перевернутой вертикально
+  let newBlock6XCoord =
+    main3BlockLeft +
+    main3Block.offsetWidth +
+    parentBlock.offsetHeight * 0.25 +
+    10;
+
+  let newBlock6YCoord =
+    tableBlock.offsetHeight / 2 -
+    originTileBlock.offsetHeight -
+    leftVerticalPadding +
+    15;
+
+  newBlock6.style.left = `${newBlock6XCoord}px`;
+  newBlock6.style.top = `${newBlock6YCoord}px`;
+  newBlock6.style.transform = `rotateZ(90deg)`;
+
+  // if(right){
+  //    newBlock6XCoord =
+  //   main3BlockLeft +
+  //   main3Block.offsetWidth +
+  //   parentBlock.offsetHeight * 0.25 +
+  //   10;
+
+  //  newBlock6YCoord =
+  //   tableBlock.offsetHeight / 2 -
+  //   originTileBlock.offsetHeight -
+  //   leftVerticalPadding +
+  //   15;
+
+  // newBlock6.style.left = `${newBlock6XCoord}px`;
+  // newBlock6.style.top = `${newBlock6YCoord}px`;
+  // newBlock6.style.transform = `rotateZ(90deg)`;
+  // }
+
+  let newBlock7XCoord =
+    main3BlockLeft +
+    main3Block.offsetWidth -
+    parentBlock.offsetHeight -
+    newBlock7.offsetWidth;
+
+  let newBlock7YCoord =
+    tableBlock.offsetHeight / 2 -
+    originTileBlock.offsetHeight -
+    leftVerticalPadding +
+    15;
+
+  newBlock7.style.left = `${newBlock7XCoord}px`;
+  newBlock7.style.top = `${newBlock7YCoord}px`;
+  newBlock6.style.transform = `rotateZ(0deg)`;
+
+  if (left) {
+    const firstTile = parentBlock.querySelector(".domino-game-table__tile");
+    firstTile.classList.remove("rotated");
+    block4.style.left = `${block4.offsetLeft - firstTile.offsetWidth / 4}px`;
+    block4.style.top = `${block4.offsetTop - firstTile.offsetWidth / 4}px`;
+    block5.style.top = `${block5.offsetTop - firstTile.offsetWidth / 2}px`;
+    newBlock6.style.left = `${
+      newBlock6.offsetLeft - firstTile.offsetWidth / 4
+    }px`;
+    newBlock6.style.top = `${
+      newBlock6.offsetTop - firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.left = `${
+      newBlock7.offsetLeft + firstTile.offsetWidth / 4
+    }px`;
+    newBlock7.style.top = `${
+      newBlock7.offsetTop - firstTile.offsetWidth / 4
+    }px`;
+  }
+}
+
+function placeVericalTilesBlock2(
+  verticalTop,
+  verticalBottom,
+  leftPadding,
+  tableBlock,
+  parentBlock,
+  parentBlockLeft,
+  originTileBlock,
+  block,
+  right,
+  left
+) {
+  let blockTiles = [];
+  let block7tiles = verticalTop.splice(0);
+  let block6tiles = verticalBottom.splice(0);
+
+  blockTiles.push({ id: 6, tiles: block6tiles });
+  blockTiles.push({ id: 7, tiles: block7tiles });
+
+  blockTiles.forEach((block) => {
+    const newBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block[id="${block.id}"]`
+    );
+    // console.log("newBlock", newBlock);
+    if (newBlock) {
+      newBlock.innerHTML = "";
+      block.tiles.forEach((tile) => {
+        if (tile?.id >= 0) {
+          newBlock.innerHTML += `
+        <div class="domino-game-table__tile ${
+          tile.rotate ? "rotated" : ""
+        }" tileid="${+tile.id}">
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.left
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.left)}
+          </div>
+          <div class="domino-game-table__tile-half domino-game-dots-${
+            tile.right
+          }">
+            ${`<div class="domino-game-tile__dot"></div>`.repeat(tile.right)}
+          </div>
+        </div>
+        `;
+        }
+      });
+    }
+    tableBlock.appendChild(newBlock);
+  });
+  // get all tiles that are on the right of origin tile
+  let allTilesInBlock = parentBlock.querySelectorAll(
+    ".domino-game-table__tile"
+  );
+  // console.log(allTilesInBlock);
+  const leftTileBlocks = [];
+  let flag = false;
+  // reverse allTilesInBlock
+  let allTilesInBlockArr = Array.from(allTilesInBlock);
+  allTilesInBlockArr.reverse();
+  allTilesInBlock = allTilesInBlockArr;
+
+  allTilesInBlock.forEach((tile) => {
+    if (
+      +originTileBlock.getAttribute("tileid") == +tile.getAttribute("tileid")
+    ) {
+      flag = true;
+    }
+    if (
+      !flag &&
+      +tile.getAttribute("tileid") != +originTileBlock.getAttribute("tileid")
+    ) {
+      leftTileBlocks.push(tile);
+    }
+  });
+
+  let leftVerticalPadding = 0;
+  leftTileBlocks.forEach((item) => {
+    leftVerticalPadding += item.offsetWidth;
+  });
+
+  let main3Block = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${3}"]`
+  );
+
+  let main3BlockLeft = +main3Block.style.left.split("px")[0];
+
+  const newBlock6 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${6}"]`
+  );
+
+  const newBlock7 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${7}"]`
+  );
+
+  const block2 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${2}"]`
+  );
+  const block5 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${5}"]`
+  );
+
+  const block1 = document.querySelector(
+    `.domino-game-table__table-tiles-block[id="${1}"]`
+  );
+
+  // нормальная x координата для перевернутой вертикально
+  let newBlock6XCoord =
+    tableBlock.offsetWidth / 2 -
+    main3Block.offsetWidth / 2 -
+    parentBlock.offsetHeight * 0.25 -
+    newBlock6.offsetWidth -
+    8;
+
+  let newBlock6YCoord = tableBlock.offsetHeight / 2 + leftVerticalPadding + 10;
+
+  newBlock6.style.left = `${newBlock6XCoord}px`;
+  newBlock6.style.top = `${newBlock6YCoord}px`;
+  newBlock6.style.transform = `rotateZ(180deg)`;
+
+  let newBlock7XCoord =
+    tableBlock.offsetWidth / 2 -
+    main3Block.offsetWidth / 2 +
+    parentBlock.offsetHeight +
+    2;
+
+  let newBlock7YCoord = tableBlock.offsetHeight / 2 + leftVerticalPadding + 10;
+  // newBlock7.style.opacity = 0;
+
+  newBlock7.style.left = `${newBlock7XCoord}px`;
+  newBlock7.style.top = `${newBlock7YCoord}px`;
+  newBlock7.style.transform = `rotateZ(180deg)`;
+
+  const lastTile = parentBlock.querySelector(
+    ".domino-game-table__tile:last-child"
+  );
+  // check if first tile is double
+  const lastTileLeft = +lastTile
+    .querySelector(".domino-game-table__tile-half:first-child")
+    .classList[1].split("-")[3];
+  const lastTileRight = +lastTile
+    .querySelector(".domino-game-table__tile-half:last-child")
+    .classList[1].split("-")[3];
+  left = lastTileLeft == lastTileRight;
+
+  if (left) {
+    lastTile.classList.remove("rotated");
+    block2.style.left = `${
+      block2.offsetLeft - originTileBlock.offsetWidth / 4
+    }px`;
+    block2.style.top = `${
+      block2.offsetTop + originTileBlock.offsetWidth / 4
+    }px`;
+    block1.style.top = `${
+      block1.offsetTop + originTileBlock.offsetWidth / 2
+    }px`;
+    newBlock6.style.left = `${
+      newBlock6.offsetLeft + originTileBlock.offsetWidth / 4
+    }px`;
+    newBlock6.style.top = `${
+      newBlock6.offsetTop + originTileBlock.offsetWidth / 4
+    }px`;
+    newBlock7.style.left = `${
+      newBlock7.offsetLeft - originTileBlock.offsetWidth / 4
+    }px`;
+    newBlock7.style.top = `${
+      newBlock7.offsetTop + originTileBlock.offsetWidth / 4
+    }px`;
+  }
+}
+
+const drawClassicGameScene = (defaultScene, newScene, player = null) => {
+  const tableBlock = document.querySelector(".domino-game-table__table");
+  let tilesAmount = countTiles(defaultScene);
+  // console.log("tilesAmount", tilesAmount);
+  // console.log("scene", newScene);
+  let blockTiles = [];
+  // console.log(blockTiles);
+  let gameMode = location.hash.split("/")[location.hash.split("/").length - 1];
+
+  let parsedScene = parseGameScene(newScene, gameMode.toUpperCase());
+  // const sceneLength = newScene.length;
+
+  if (tilesAmount <= 8) {
+    blockTiles = [{ id: 3, tiles: parsedScene }];
+  } else if (tilesAmount > 8 && tilesAmount <= 12) {
     blockTiles.push(
-      { id: 5, tiles: newScene.slice(0, 6) },
-      { id: 4, tiles: newScene.slice(6, 10) },
-      { id: 3, tiles: newScene.slice(10, 18) },
-      { id: 2, tiles: newScene.slice(18, 22) },
-      { id: 1, tiles: newScene.slice(22) }
+      { id: 3, tiles: parsedScene.slice(0, 8) },
+      { id: 4, tiles: parsedScene.slice(8) }
+    );
+  } else if (tilesAmount > 12 && tilesAmount <= 18) {
+    blockTiles.push(
+      { id: 3, tiles: parsedScene.slice(0, 8) },
+      { id: 4, tiles: parsedScene.slice(8, 12) },
+      { id: 5, tiles: parsedScene.slice(12) }
+    );
+  } else if (tilesAmount > 18 && tilesAmount <= 22) {
+    let firstRowDelete = parsedScene.length - 18;
+    blockTiles.push(
+      {
+        id: 5,
+        tiles: parsedScene.slice(firstRowDelete + 12, firstRowDelete + 18),
+      },
+      {
+        id: 4,
+        tiles: parsedScene.slice(firstRowDelete + 8, firstRowDelete + 12),
+      },
+      { id: 3, tiles: parsedScene.slice(firstRowDelete, firstRowDelete + 8) },
+      { id: 2, tiles: parsedScene.slice(0, firstRowDelete) }
+    );
+  } else if (tilesAmount > 22 && tilesAmount <= 28) {
+    let firstRowDelete = parsedScene.length - 22;
+    blockTiles.push(
+      {
+        id: 5,
+        tiles: parsedScene.slice(firstRowDelete + 16, firstRowDelete + 22),
+      },
+      {
+        id: 4,
+        tiles: parsedScene.slice(firstRowDelete + 12, firstRowDelete + 16),
+      },
+      {
+        id: 3,
+        tiles: parsedScene.slice(firstRowDelete + 4, firstRowDelete + 12),
+      },
+      { id: 2, tiles: parsedScene.slice(firstRowDelete, firstRowDelete + 4) },
+      { id: 1, tiles: parsedScene.slice(0, firstRowDelete) }
     );
   }
 
@@ -133,6 +1725,10 @@ const drawGameScene = (currScene, newScene, player) => {
       <div id="3" class="domino-game-table__table-tiles-block-3 domino-game-table__table-tiles-block"></div>
       <div id="4" class="domino-game-table__table-tiles-block-4 domino-game-table__table-tiles-block"></div>
       <div id="5" class="domino-game-table__table-tiles-block-5 domino-game-table__table-tiles-block"></div>
+      <div id="6" class="domino-game-table__table-tiles-block-6 domino-game-table__table-tiles-block"></div>
+      <div id="7" class="domino-game-table__table-tiles-block-7 domino-game-table__table-tiles-block"></div>
+      <div id="8" class="domino-game-table__table-tiles-block-8 domino-game-table__table-tiles-block"></div>
+      <div id="9" class="domino-game-table__table-tiles-block-9 domino-game-table__table-tiles-block"></div>
     `;
     insertingBlocks = document.querySelectorAll(
       ".domino-game-table__table-tiles-block"
@@ -168,113 +1764,24 @@ const drawGameScene = (currScene, newScene, player) => {
     }
   });
   tablePlacement();
+  // scaleDominoTable(newScene);
 
   return;
-  return;
-  return;
-  return;
-  return;
-
-  for (
-    let i = 0;
-    i < newScene.indexOf(newScene.find((tile) => tile.id == currScene[0].id));
-    i++
-  ) {
-    newLeftTiles.push(newScene[i]);
-  }
-
-  // find index of last tile of currScene in newScene
-
-  // let number = newScene.indexOf(currScene[currScene.length - 1]);
-
-  for (
-    let i =
-      newScene.indexOf(
-        newScene.find((tile) => tile.id == currScene[currScene.length - 1].id)
-      ) + 1;
-    i < newScene.length;
-    i++
-  ) {
-    console.log(newScene[i]);
-    newRightTiles.push(newScene[i]);
-  }
-
-  // draw new tiles left
-
-  newLeftTiles.forEach((tile) => {
-    const existedTiles = tableBlock.querySelectorAll(
-      ".domino-game-table__tile"
-    );
-    const firstTile = existedTiles[0];
-
-    const newTile = document.createElement("div");
-    newTile.classList.add("domino-game-table__tile");
-    if (tile.rotate) {
-      newTile.classList.add("rotated");
-    }
-    newTile.setAttribute("tileid", tile.id);
-
-    const newTileLeft = document.createElement("div");
-    newTileLeft.classList.add(
-      "domino-game-table__tile-half",
-      `domino-game-dots-${tile.left}`
-    );
-    newTileLeft.innerHTML = `${`<div class="domino-game-tile__dot"></div>`.repeat(
-      tile.left
-    )}`;
-
-    const newTileRight = document.createElement("div");
-    newTileRight.classList.add(
-      "domino-game-table__tile-half",
-      `domino-game-dots-${tile.right}`
-    );
-    newTileRight.innerHTML = `${`<div class="domino-game-tile__dot"></div>`.repeat(
-      tile.right
-    )}`;
-
-    newTile.appendChild(newTileLeft);
-    newTile.appendChild(newTileRight);
-
-    tableBlock.insertBefore(newTile, firstTile);
-  });
-
-  // tiles to right
-  newRightTiles.forEach((tile) => {
-    const existedTiles = tableBlock.querySelectorAll(
-      ".domino-game-table__tile"
-    );
-
-    const newTile = document.createElement("div");
-    newTile.classList.add("domino-game-table__tile");
-    if (tile.rotate) {
-      newTile.classList.add("rotated");
-    }
-    newTile.setAttribute("tileid", tile.id);
-
-    const newTileLeft = document.createElement("div");
-    newTileLeft.classList.add(
-      "domino-game-table__tile-half",
-      `domino-game-dots-${tile.left}`
-    );
-    newTileLeft.innerHTML = `${`<div class="domino-game-tile__dot"></div>`.repeat(
-      tile.left
-    )}`;
-
-    const newTileRight = document.createElement("div");
-    newTileRight.classList.add(
-      "domino-game-table__tile-half",
-      `domino-game-dots-${tile.right}`
-    );
-    newTileRight.innerHTML = `${`<div class="domino-game-tile__dot"></div>`.repeat(
-      tile.right
-    )}`;
-
-    newTile.appendChild(newTileLeft);
-    newTile.appendChild(newTileRight);
-
-    tableBlock.appendChild(newTile);
-  });
 };
+
+function parseGameScene(scene, gameMode) {
+  if (gameMode && gameMode == "CLASSIC") {
+    let parsedScene = [];
+    scene.forEach((item) => {
+      if (item?.id) {
+        parsedScene.push(item);
+      }
+    });
+    return parsedScene;
+  } else {
+    // для телефона
+  }
+}
 
 const drawUserInfo = (playerData, user) => {
   const userBlock = document.querySelector(".domino-game-user");
@@ -294,7 +1801,7 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
     tile.removeEventListener("click", addTileEventListeners);
   });
   tiles.forEach((tile) => {
-    console.log("worked click handler");
+    // console.log("worked click handler");
     const clickHandler = addTileEventListeners(
       tile,
       roomId,
@@ -307,15 +1814,38 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
 
   function addTileEventListeners(tile, roomId, tableId, playerMode, gameMode) {
     return function () {
+      if (tile.classList.contains("sister-highlight")) {
+        // console.log("sister active pressed");
+        // tilesController(roomId, tableId, playerMode, gameMode);
+        let scene = localStorage.getItem("dominoGameScene");
+        if (scene) {
+          scene = JSON.parse(scene);
+
+          let gameTiles = document.querySelectorAll(".domino-game-table__tile");
+          gameTiles.forEach((gameTile) => {
+            gameTile.classList.add("disabled");
+            gameTile.classList.remove(
+              "finger-right",
+              "finger-left",
+              "highlight"
+            );
+          });
+
+          tilesState(window.currentTurn, scene);
+        }
+
+        return;
+      }
       if (tile.classList.contains("disabled")) {
         return;
       }
+
       const user = JSON.parse(localStorage.getItem("user"));
-      console.log(
-        user.userId,
-        window.currentTurn,
-        user.userId == window.currentTurn
-      );
+      // console.log(
+      //   user.userId,
+      //   window.currentTurn,
+      //   user.userId == window.currentTurn
+      // );
       if (window.currentTurn) {
         if (user.userId != window.currentTurn) {
           return;
@@ -340,39 +1870,144 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
       const tableTiles = tableBlock.querySelectorAll(
         ".domino-game-table__tile"
       );
+      if (gameMode == "CLASSIC") {
+        if (tableTiles && tableTiles.length > 1) {
+          const leftTile = tableTiles[0];
+          const sceneLeft = +leftTile
+            .querySelector(".domino-game-table__tile-half:first-child")
+            .classList[1].split("-")[3];
+          const rightTile = tableTiles[tableTiles.length - 1];
+          const sceneRight = +rightTile
+            .querySelector(".domino-game-table__tile-half:last-child")
+            .classList[1].split("-")[3];
 
-      console.log(tableTiles);
-      if (tableTiles && tableTiles.length > 1) {
-        const leftTile = tableTiles[0];
-        const sceneLeft = +leftTile
-          .querySelector(".domino-game-table__tile-half:first-child")
-          .classList[1].split("-")[3];
-        const rightTile = tableTiles[tableTiles.length - 1];
-        const sceneRight = +rightTile
-          .querySelector(".domino-game-table__tile-half:last-child")
-          .classList[1].split("-")[3];
+          if (
+            sceneLeft == sceneRight ||
+            (left == sceneLeft && right == sceneRight) ||
+            (right == sceneLeft && left == sceneRight)
+          ) {
+            tile.classList.add("sister-highlight");
+            addTwoTilesEventListeners(
+              { left, right, id },
+              roomId,
+              tableId,
+              playerMode,
+              gameMode,
+              leftTile,
+              rightTile,
+              user,
+              tile
+            );
+            return;
+          }
+        }
+      } else if (gameMode == "TELEPHONE") {
+        let scene = localStorage.getItem("dominoGameScene");
+        // console.log(scene);
 
-        console.log(sceneLeft, sceneRight, sceneLeft == sceneRight);
+        scene = JSON.parse(scene);
+        const tilesAmount = countTiles(scene);
 
-        if (sceneLeft == sceneRight) {
+        let middleRow = scene[Math.floor(scene.length / 2)];
+        let leftTile = null;
+        let rightTile = null;
+        for (let i = 0; i < middleRow.length; i++) {
+          if (middleRow[i]?.id >= 0 && !leftTile) {
+            leftTile = middleRow[i];
+          }
+        }
+        for (let i = middleRow.length - 1; i >= 0; i--) {
+          if (middleRow[i]?.id >= 0 && !rightTile) {
+            rightTile = middleRow[i];
+          }
+        }
+
+        let { top, bottom } = findVerticalCorners(scene);
+
+        const left = +tile
+          .querySelector(".domino-tile__half:first-child")
+          .classList[1].split("-")[2];
+        const right = +tile
+          .querySelector(".domino-tile__half:last-child")
+          .classList[1].split("-")[2];
+        const id = +tile.getAttribute("tileid");
+
+        let corners = [];
+        if (leftTile && rightTile) {
+          if (top && bottom) {
+            corners = [
+              { value: top.left, side: "top", id: top.id },
+              { value: bottom.right, side: "bottom", id: bottom.id },
+              { value: leftTile.left, side: "left", id: leftTile.id },
+              { value: rightTile.right, side: "right", id: rightTile.id },
+            ];
+          } else {
+            corners = [
+              { value: leftTile.left, side: "left", id: leftTile.id },
+              { value: rightTile.right, side: "right", id: rightTile.id },
+            ];
+            // get double tiles in middle row
+            let doubleTiles = [];
+            middleRow.forEach((tile) => {
+              if (tile?.left == tile?.right) {
+                doubleTiles.push(tile);
+              }
+            });
+
+            let availableDoubles = [];
+
+            // console.log(availableDoubles, "avaialable doubles");
+
+            doubleTiles.forEach((tile) => {
+              // check if on the right and left of double there are tiles
+              const leftTile = middleRow[middleRow.indexOf(tile) - 1];
+              const rightTile = middleRow[middleRow.indexOf(tile) + 1];
+              if (
+                leftTile &&
+                rightTile &&
+                leftTile?.id >= 0 &&
+                rightTile?.id >= 0
+              ) {
+                availableDoubles.push(tile);
+              }
+            });
+
+            availableDoubles.forEach((doubleTile) => {
+              corners.push({
+                value: doubleTile.left,
+                side: "top",
+                id: doubleTile.id,
+              });
+            });
+          }
+        }
+
+        const sisterCorners = [];
+
+        corners.forEach((corner) => {
+          if (corner.value == left || corner.value == right) {
+            sisterCorners.push(corner);
+          }
+        });
+        if (sisterCorners.length > 1 && tilesAmount > 1) {
           tile.classList.add("sister-highlight");
-          console.log("double tiles");
-          addTwoTilesEventListeners(
+
+          addTelephoneSisterEventListeners(
             { left, right, id },
             roomId,
             tableId,
             playerMode,
             gameMode,
-            leftTile,
-            rightTile,
-            user,
-            tile
+            sisterCorners,
+            user
           );
+
           return;
         }
       }
 
-      console.log("bebra top4ik bem bam");
+      // тут доробити
+
       window.ws.send(
         JSON.stringify({
           method: "playDominoTurn",
@@ -388,19 +2023,21 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
   }
 };
 
-const addTwoTilesEventListeners = (
+const addTelephoneSisterEventListeners = (
   tile,
   roomId,
   tableId,
   playerMode,
   gameMode,
-  leftTile,
-  rightTile,
-  user,
-  sisterTileElement
+  sisterCorners,
+  user
 ) => {
-  function twoTilesListener(sisterTile) {
+  // функция для отправки систр тайла и очистки после нажатия
+  function telephoneSisterTilesListener(sisterTile, thisTile) {
     return function () {
+      if (!thisTile.classList.contains("highlight")) {
+        return;
+      }
       window.ws.send(
         JSON.stringify({
           method: "playDominoTurn",
@@ -414,20 +2051,105 @@ const addTwoTilesEventListeners = (
         })
       );
 
+      let tiles = document.querySelectorAll(".domino-game__tile");
+      tiles.forEach((tile) => {
+        tile.classList.add("disabled");
+        tile.classList.remove("highlight");
+      });
+
+      let sceneTiles = document.querySelectorAll(".domino-game-table__tile");
+
+      sceneTiles.forEach((sceneTile) => {
+        sceneTile.removeEventListener("click", telephoneSisterTilesListener);
+
+        sceneTile.classList.remove("highlight", `finger-left`);
+        sceneTile.classList.remove("sister-highlight");
+      });
+
+      sisterCorners.forEach((corner) => {
+        let sisterTile = corner.side;
+        const sisterTileElement = document.querySelector(
+          `.domino-game-table__tile[tileid="${corner.id}"]`
+        );
+        if (sisterTileElement) {
+          sisterTileElement.classList.remove("highlight", `finger-left`);
+          sisterTileElement.classList.remove("sister-highlight");
+          sisterTileElement.removeEventListener(
+            "click",
+            telephoneSisterTilesListener(sisterTile, sisterTileElement)
+          );
+        }
+      });
+    };
+  }
+
+  // ставим новые лисенеры
+  sisterCorners.forEach((corner) => {
+    let sisterTile = corner.side;
+    const sisterTileElement = document.querySelector(
+      `.domino-game-table__tile[tileid="${corner.id}"]`
+    );
+    if (sisterTileElement) {
+      sisterTileElement.classList.add("highlight", `finger-left`);
+      const clickHandler = telephoneSisterTilesListener(
+        sisterTile,
+        sisterTileElement
+      );
+      sisterTileElement.addEventListener("click", clickHandler);
+    }
+  });
+};
+
+const addTwoTilesEventListeners = (
+  tile,
+  roomId,
+  tableId,
+  playerMode,
+  gameMode,
+  leftTile,
+  rightTile,
+  user,
+  sisterTileElement
+) => {
+  function twoTilesListener(sisterTile, thisTile) {
+    return function () {
+      if (!thisTile.classList.contains("highlight")) {
+        return;
+      }
+      window.ws.send(
+        JSON.stringify({
+          method: "playDominoTurn",
+          userId: +user.userId,
+          roomId,
+          tableId,
+          playerMode,
+          gameMode,
+          tile,
+          sisterTile,
+        })
+      );
+
+      // удалить подсветку всех
+      let tiles = document.querySelectorAll(".domino-game__tile");
+      tiles.forEach((tile) => {
+        tile.classList.add("disabled");
+        tile.classList.remove("highlight");
+      });
+
       leftTile.removeEventListener("click", leftTileListener);
       rightTile.removeEventListener("click", rightTileListener);
 
-      leftTile.classList.remove("highlight");
-      rightTile.classList.remove("highlight");
+      leftTile.classList.remove("highlight", "finger-left");
+      rightTile.classList.remove("highlight", "finger-right");
       sisterTileElement.classList.remove("sister-highlight");
     };
   }
 
-  const leftTileListener = twoTilesListener("left");
-  const rightTileListener = twoTilesListener("right");
+  const leftTileListener = twoTilesListener("left", leftTile);
+  const rightTileListener = twoTilesListener("right", rightTile);
 
-  leftTile.classList.add("highlight");
-  rightTile.classList.add("highlight");
+  leftTile.classList.add("highlight", "finger-left");
+  rightTile.classList.add("highlight", "finger-right");
 
   leftTile.addEventListener("click", leftTileListener);
   rightTile.addEventListener("click", rightTileListener);
@@ -494,16 +2216,17 @@ export const getMarketTile = (tile, msg) => {
   tilesState(msg.turn, msg.scene);
 
   // добавляем функционал на доминошку
-  addTileFunction(
-    userTile,
-    msg.dominoRoomId,
-    msg.tableId,
-    msg.playerMode,
-    msg.gameMode
-  );
+  // addTileFunction(
+  //   userTile,
+  //   msg.dominoRoomId,
+  //   msg.tableId,
+  //   msg.playerMode,
+  //   msg.gameMode
+  // );
+  tilesController(msg.dominoRoomId, msg.tableId, msg.playerMode, msg.gameMode);
 
   let marketPopup = document.querySelector(".market-popup");
-  console.log(msg.closeMarket);
+
   if (msg.closeMarket) {
     marketPopup.remove();
   } else if (!msg.closeMarket) {
@@ -511,11 +2234,11 @@ export const getMarketTile = (tile, msg) => {
     marketTiles.forEach((tile) => {
       tile.classList.add("available");
     });
+    // добавить систр тайл
   }
 };
 
 export function updateMarketNum(marketNumber, playerId = null) {
-  console.log(marketNumber, playerId);
   let dominoTableMarket = document.querySelector(".domino-table-store");
   if (dominoTableMarket) {
     let tableMarketScore = document.querySelector(".domino-table-store__score");
@@ -531,7 +2254,6 @@ export function updateMarketNum(marketNumber, playerId = null) {
 function animateMarketGettingTile(playerId) {}
 
 export function updateEnemysTilesCount(tilesData) {
-  console.log(tilesData);
   tilesData.forEach((userTiles) => {
     let enemyUser = document.querySelector(
       `.domino-game-table__enemy-player[userid="${userTiles.userId}"]`
@@ -587,13 +2309,76 @@ const addTileFunction = (tile, roomId, tableId, playerMode, gameMode) => {
   });
 };
 
-export const tilesState = (turn, scene) => {
-  console.log(scene);
+export const countTiles = (scene) => {
+  let tilesAmount = 0;
+  scene.forEach((row) => {
+    row.forEach((tile) => {
+      if (tile?.id >= 0) {
+        tilesAmount++;
+      }
+    });
+  });
+  return tilesAmount;
+};
+
+const checkIfVerticalsFilled = (scene) => {
+  // take middle row
+  let middleRow = scene[Math.floor(scene.length / 2)];
+  // check if any other row has tiles
+  let areVerticalsFilled = false;
+  scene.forEach((row) => {
+    if (row != middleRow) {
+      row.forEach((tile) => {
+        if (tile?.id) {
+          areVerticalsFilled = true;
+        }
+      });
+    }
+  });
+  return areVerticalsFilled;
+};
+
+const findVerticalCorners = (scene) => {
+  // take middle row
+  let verticalIndex = null;
+
+  scene.forEach((row, i) => {
+    if (i != Math.floor(scene.length / 2)) {
+      row.forEach((tile, j) => {
+        if (tile?.id >= 0) {
+          verticalIndex = row.indexOf(tile);
+        }
+      });
+    }
+  });
+
+  let top = null;
+  let bottom = null;
+  // find first and last element in rows with index verticalIndex
+  scene.forEach((row) => {
+    if (row[verticalIndex]?.id >= 0) {
+      if (top === null) {
+        top = row[verticalIndex];
+      }
+      bottom = row[verticalIndex];
+    }
+  });
+
+  return { top, bottom };
+};
+
+export const tilesState = (
+  turn,
+  scene,
+  continued = false,
+  firstTurn = false
+) => {
   let dominoGamePage = document.querySelector(".domino-game-page");
   if (dominoGamePage) {
     let userTiles = document.querySelectorAll(".domino-game__tile");
-
+    let sceneTilesAmount = countTiles(scene);
     userTiles.forEach((tile) => {
+      tile.classList.remove("sister-highlight");
       tile.classList.add("disabled");
       tile.classList.remove("highlight");
     });
@@ -602,71 +2387,256 @@ export const tilesState = (turn, scene) => {
     user = JSON.parse(user);
 
     if (turn == user.userId) {
-      if (scene.length == 0) {
-        // find double tiles in user tiles
-        let doubleTiles = [];
+      if (sceneTilesAmount == 0 && continued == true) {
         userTiles.forEach((tile) => {
-          let left = +tile
-            .querySelector(".domino-tile__half:first-child")
-            .classList[1].split("-")[2];
-          let right = +tile
-            .querySelector(".domino-tile__half:last-child")
-            .classList[1].split("-")[2];
-          if (left == right) {
-            doubleTiles.push(tile);
-          }
-        });
-
-        // highlight all double tiles
-        doubleTiles.forEach((tile) => {
           tile.classList.remove("disabled");
           tile.classList.add("highlight");
         });
         return;
       }
-      if (scene.length > 0) {
-        // get right and left tiles
-        let leftTile = scene[0];
-        let rightTile = scene[scene.length - 1];
 
-        // get left and right dots
-        let leftDots = leftTile.left;
-        let rightDots = rightTile.right;
+      let gameMode =
+        location.hash.split("/")[location.hash.split("/").length - 1];
+      gameMode = gameMode.toUpperCase();
 
-        console.log("leftDots", leftDots);
-        console.log("rightDots", rightDots);
+      if (gameMode == "CLASSIC") {
+        scene = scene[Math.floor(scene.length / 2)];
 
-        // find tiles with left and right dots in user tiles
-        let leftTiles = [];
-        let rightTiles = [];
+        if (sceneTilesAmount == 0) {
+          // find double tiles in user tiles
+          let doubleTiles = [];
+          userTiles.forEach((tile) => {
+            let left = +tile
+              .querySelector(".domino-tile__half:first-child")
+              .classList[1].split("-")[2];
+            let right = +tile
+              .querySelector(".domino-tile__half:last-child")
+              .classList[1].split("-")[2];
+            if (left == right) {
+              doubleTiles.push(tile);
+            }
+          });
 
-        userTiles.forEach((tile) => {
-          let left = +tile
-            .querySelector(".domino-tile__half:first-child")
-            .classList[1].split("-")[2];
-          let right = +tile
-            .querySelector(".domino-tile__half:last-child")
-            .classList[1].split("-")[2];
-          if (left == leftDots || right == leftDots) {
-            leftTiles.push(tile);
+          // highlight all double tiles
+          doubleTiles.forEach((tile) => {
+            tile.classList.remove("disabled");
+            tile.classList.add("highlight");
+          });
+          return;
+        } else if (sceneTilesAmount == 0) {
+          userTiles.forEach((tile) => {
+            let left = +tile
+              .querySelector(".domino-tile__half:first-child")
+              .classList[1].split("-")[2];
+            let right = +tile
+              .querySelector(".domino-tile__half:last-child")
+              .classList[1].split("-")[2];
+            if ((left == 2 && right == 3) || (left == 3 && right == 2)) {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            }
+          });
+        } else if (sceneTilesAmount > 0) {
+          // get right and left tiles
+          let leftTile = null;
+          let rightTile = null;
+          for (let i = 0; i < scene.length; i++) {
+            if ((scene[i]?.left || scene[i]?.right) && !leftTile) {
+              leftTile = scene[i];
+            }
           }
-          if (right == rightDots || left == rightDots) {
-            rightTiles.push(tile);
+          for (let i = scene.length - 1; i >= 0; i--) {
+            if ((scene[i]?.left || scene[i]?.right) && !rightTile) {
+              rightTile = scene[i];
+            }
           }
-        });
-        console.log("leftTiles", leftTiles);
-        console.log("rightTiles", rightTiles);
+          // console.log(leftTile);
+          // console.log(rightTile);
 
-        // highlight all tiles with left and right dots
-        leftTiles.forEach((tile) => {
-          tile.classList.remove("disabled");
-          tile.classList.add("highlight");
-        });
+          // get left and right dots
+          let leftDots = leftTile.left;
+          let rightDots = rightTile.right;
 
-        rightTiles.forEach((tile) => {
-          tile.classList.remove("disabled");
-          tile.classList.add("highlight");
-        });
+          // find tiles with left and right dots in user tiles
+          let leftTiles = [];
+          let rightTiles = [];
+
+          userTiles.forEach((tile) => {
+            let left = +tile
+              .querySelector(".domino-tile__half:first-child")
+              .classList[1].split("-")[2];
+            let right = +tile
+              .querySelector(".domino-tile__half:last-child")
+              .classList[1].split("-")[2];
+            if (left == leftDots || right == leftDots) {
+              leftTiles.push(tile);
+            }
+            if (right == rightDots || left == rightDots) {
+              rightTiles.push(tile);
+            }
+          });
+
+          // highlight all tiles with left and right dots
+          leftTiles.forEach((tile) => {
+            tile.classList.remove("disabled");
+            tile.classList.add("highlight");
+          });
+
+          rightTiles.forEach((tile) => {
+            tile.classList.remove("disabled");
+            tile.classList.add("highlight");
+          });
+        }
+
+        //
+      } else {
+        const areVerticalsFilled = checkIfVerticalsFilled(scene);
+
+        if (!areVerticalsFilled) {
+          let centralScene = scene[Math.floor(scene.length / 2)];
+          if (sceneTilesAmount == 0) {
+            // find double tiles in user tiles
+            let doubleTiles = [];
+            userTiles.forEach((tile) => {
+              let left = +tile
+                .querySelector(".domino-tile__half:first-child")
+                .classList[1].split("-")[2];
+              let right = +tile
+                .querySelector(".domino-tile__half:last-child")
+                .classList[1].split("-")[2];
+              if (left == right) {
+                doubleTiles.push(tile);
+              }
+            });
+
+            // highlight all double tiles
+            doubleTiles.forEach((tile) => {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            });
+
+            if (firstTurn) {
+              userTiles.forEach((tile) => {
+                let left = +tile
+                  .querySelector(".domino-tile__half:first-child")
+                  .classList[1].split("-")[2];
+                let right = +tile
+                  .querySelector(".domino-tile__half:last-child")
+                  .classList[1].split("-")[2];
+
+                tile.classList.remove("disabled");
+                tile.classList.add("highlight");
+              });
+            }
+
+            return;
+          } else if (sceneTilesAmount > 0) {
+            // get right and left tiles
+            let leftTile = null;
+            let rightTile = null;
+            for (let i = 0; i < centralScene.length; i++) {
+              if (centralScene[i]?.id >= 0 && !leftTile) {
+                leftTile = centralScene[i];
+              }
+            }
+            for (let i = centralScene.length - 1; i >= 0; i--) {
+              if (centralScene[i]?.id >= 0 && !rightTile) {
+                rightTile = centralScene[i];
+              }
+            }
+
+            // get left and right dots
+            let leftDots = leftTile.left;
+            let rightDots = rightTile.right;
+
+            // find tiles with left and right dots in user tiles
+            let leftTiles = [];
+            let rightTiles = [];
+            let doubleTiles = [];
+
+            // find double tiles on scene and highlight them
+            centralScene.forEach((tile) => {
+              if (tile?.left == tile?.right) {
+                doubleTiles.push(tile);
+              }
+            });
+
+            userTiles.forEach((tile) => {
+              let left = +tile
+                .querySelector(".domino-tile__half:first-child")
+                .classList[1].split("-")[2];
+              let right = +tile
+                .querySelector(".domino-tile__half:last-child")
+                .classList[1].split("-")[2];
+              if (left == leftDots || right == leftDots) {
+                leftTiles.push(tile);
+              }
+              if (right == rightDots || left == rightDots) {
+                rightTiles.push(tile);
+              }
+              doubleTiles.forEach((doubleTile) => {
+                if (left == doubleTile.left || right == doubleTile.right) {
+                  tile.classList.remove("disabled");
+                  tile.classList.add("highlight");
+                }
+              });
+            });
+
+            // highlight all tiles with left and right dots
+            leftTiles.forEach((tile) => {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            });
+
+            rightTiles.forEach((tile) => {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            });
+          }
+        } else {
+          // when there are verticals, check all 4 corners
+          const { top, bottom } = findVerticalCorners(scene);
+          let leftTile = null;
+          let rightTile = null;
+          let newScene = scene[Math.floor(scene.length / 2)];
+          for (let i = 0; i < newScene.length; i++) {
+            if ((newScene[i]?.left || newScene[i]?.right) && !leftTile) {
+              leftTile = newScene[i];
+            }
+          }
+          for (let i = newScene.length - 1; i >= 0; i--) {
+            if ((newScene[i]?.left || newScene[i]?.right) && !rightTile) {
+              rightTile = newScene[i];
+            }
+          }
+          const leftDots = leftTile.left;
+          const rightDots = rightTile.right;
+          // find tiles with left and right dots, with top and bottom dots in user tiles
+          userTiles.forEach((tile) => {
+            let left = +tile
+              .querySelector(".domino-tile__half:first-child")
+              .classList[1].split("-")[2];
+            let right = +tile
+              .querySelector(".domino-tile__half:last-child")
+              .classList[1].split("-")[2];
+            if (left == leftDots || right == leftDots) {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            }
+            if (left == top.left || right == top.left) {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            }
+            if (right == rightDots || left == rightDots) {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            }
+            if (right == bottom.right || left == bottom.right) {
+              tile.classList.remove("disabled");
+              tile.classList.add("highlight");
+            }
+          });
+        }
       }
     }
   }
@@ -753,7 +2723,7 @@ const startDominoTurnTimer = async (currentTurn, currTurnTime = null) => {
         let countDownDate = new Date(currTurnTime).getTime() + 25000;
         let nowClientTime = await lotoNav.NowClientTime();
         distance = countDownDate - nowClientTime;
-        console.log(distance);
+        // console.log(distance);
       } else {
         distance = 25000;
       }
@@ -779,7 +2749,7 @@ const startDominoTurnTimer = async (currentTurn, currTurnTime = null) => {
       activeTurnTimers.push(timer);
       userBlock.appendChild(userTurnTimer);
     } else {
-      // console.log("currEnemysTurn", currentTurn);
+      // // console.log("currEnemysTurn", currentTurn);
 
       let enemyBlock = document.querySelector(
         `.domino-game-table__enemy-player[userId="${currentTurn}"]`
@@ -815,7 +2785,9 @@ const startDominoTurnTimer = async (currentTurn, currTurnTime = null) => {
       let enemyAvatarBlock = enemyBlock.querySelector(
         ".domino-enemy-player__img"
       );
-      enemyAvatarBlock.appendChild(enemyTurnTimer);
+      if (enemyAvatarBlock) {
+        enemyAvatarBlock.appendChild(enemyTurnTimer);
+      }
     }
   }
 };
@@ -837,21 +2809,41 @@ function setTimer(distance, timer, existingTimer, userBlock, tiles = null) {
         tiles.forEach((tile) => {
           tile.classList.remove("highlight");
           tile.classList.add("disabled");
+          tile.classList.remove("sister-highlight");
         });
       }
+      const sceneTiles = document.querySelectorAll(".domino-game-table__tile");
+      sceneTiles.forEach((tile) => {
+        tile.classList.remove("highlight");
+      });
       if (existingTimer) {
         let userBlock = document.querySelector(".domino-game-user__avatar");
         userBlock.classList.remove("current-turn");
 
-        impPopup.open("Вы пропустили ход");
+        showAutoTurnWindow(false);
 
         userBlock.classList.add("skipped-turn");
         setTimeout(() => {
           userBlock.classList.remove("skipped-turn");
-          const popup = document.querySelector(".popup");
-          impPopup.close(popup);
+          // const popup = document.querySelector(".popup");
+          // if (popup) {
+          //   impPopup.close(popup);
+          // }
         }, 2000);
 
+        if (existingTimer.classList.contains("user-avatar__countdown")) {
+          let gamePage = document.querySelector(".domino-game-page");
+          // console.log(gamePage);
+
+          if (gamePage) {
+            let loadingElement = document.createElement("div");
+            loadingElement.innerHTML =
+              '<div class="lds-ring"><div></div><div></div><div></div><div></div></div>';
+            loadingElement.classList.add("domino-game-loader");
+            gamePage.appendChild(loadingElement);
+            // console.log(loadingElement);
+          }
+        }
         existingTimer.remove();
       }
     } else {
@@ -868,6 +2860,27 @@ function setTimer(distance, timer, existingTimer, userBlock, tiles = null) {
   return newTimer;
 }
 
+export function showAutoTurnWindow(isSkipped) {
+  // place small window above user avatar
+  const userBlock = document.querySelector(".domino-game-user");
+
+  const existingAutoWindow = document.querySelector(".auto-window");
+  if (existingAutoWindow) {
+    existingAutoWindow.remove();
+  }
+
+  const autoWindow = document.createElement("div");
+  autoWindow.classList.add("auto-window");
+
+  autoWindow.innerHTML = isSkipped ? "Ход пропущен!" : "Авто-ход!";
+
+  userBlock.appendChild(autoWindow);
+
+  setTimeout(() => {
+    autoWindow.remove();
+  }, 2000);
+}
+
 export function reconnectFillTable(msg) {
   let {
     scene,
@@ -882,40 +2895,49 @@ export function reconnectFillTable(msg) {
     playerMode,
     gameMode,
     clearScene,
+    continued,
   } = msg;
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  console.log(clearScene);
+  // console.log(clearScene);
 
   if (clearScene) {
     let tableBlock = document.querySelector(".domino-game-table__table");
     tableBlock.innerHTML = "";
-    console.log(tableBlock);
+    // console.log(tableBlock);
   }
 
   updateGameScene(scene);
 
   let playerData = players.find((player) => player.userId == user.userId);
-  console.log(playerData);
+  // console.log(playerData);
   playerData.score = playerData.points;
 
   drawPlayerTiles(userTiles);
   drawUserInfo(playerData, user);
 
-  tilesState(turn, scene);
+  tilesState(turn, scene, continued);
   tilesController(roomId, tableId, playerMode, gameMode);
 
   let marketLength = market.length;
   updateMarketNum(marketLength);
 
-  setDominoTurn(turn, turnTime, players);
-
   const tableBlock = document.querySelector(".domino-game-page-table-block");
+  const existingEnemyPlayers = tableBlock.querySelectorAll(
+    ".domino-game-table__enemy-player"
+  );
+
+  if (existingEnemyPlayers) {
+    existingEnemyPlayers.forEach((enemy) => {
+      enemy.remove();
+    });
+  }
+
   let emenyPlayerNum = 1;
-  console.log(players);
+  // console.log(players);
   players.forEach((player, i) => {
-    console.log(player);
+    // console.log(player);
     if (!(player.userId == user.userId)) {
       tableBlock.innerHTML += `
       <div
@@ -930,7 +2952,7 @@ export function reconnectFillTable(msg) {
         </div>
         <div class="domino-enemy-player__info">
           <h2 class="domino-enemy-player__name">${player.username}</h2>
-          <span class="domino-enemy-player__score">${player.score}/50</span>
+          <span class="domino-enemy-player__score">${player.score}/165</span>
         </div>
       </div>
       `;
@@ -938,6 +2960,18 @@ export function reconnectFillTable(msg) {
       emenyPlayerNum++;
     }
   });
+
+  const enemyScores = tableBlock.querySelectorAll(
+    ".domino-enemy-player__score"
+  );
+
+  if (gameMode.toUpperCase() == "CLASSIC") {
+    enemyScores.forEach((enemyScore) => {
+      enemyScore.remove();
+    });
+  }
+
+  setDominoTurn(turn, turnTime, players);
 
   // check if user has to take tiles from market
   window.ws.send(
@@ -956,6 +2990,7 @@ export function dropTableInfo() {
   let tableBlock = document.querySelector(".domino-game-table__table");
   if (tableBlock) {
     tableBlock.innerHTML = "";
+    tableBlock.style.scale = "1";
   }
   localStorage.setItem("dominoGameScene", JSON.stringify([]));
 
@@ -987,7 +3022,6 @@ export const showSkippedEnemyTurn = (userId) => {
 };
 
 export function tablePlacement() {
-  console.log("done tablePlacement");
   const table = document.querySelector(".domino-game-table__table");
   if (!table) {
     return;
@@ -1065,6 +3099,16 @@ export function tablePlacement() {
         blockSizes.find((block) => block.id == 4).width -
         blockSizes.find((block) => block.id == 3).height / 2,
     },
+    {
+      id: 6,
+      x: 0,
+      y: 0,
+    },
+    {
+      id: 7,
+      x: 100,
+      y: 100,
+    },
   ];
 
   const block2FirstTile = document.querySelector(
@@ -1119,13 +3163,151 @@ export function tablePlacement() {
     block.style.top =
       blockCoordinates.find(
         (blockCord) => blockCord.id == +block.getAttribute("id")
-      ).y + "px";
+      )?.y + "px";
     block.style.left =
       blockCoordinates.find(
         (blockCord) => blockCord.id == +block.getAttribute("id")
-      ).x + "px";
+      )?.x + "px";
   });
 
   window.removeEventListener("resize", tablePlacement);
   window.addEventListener("resize", tablePlacement);
 }
+
+export function scaleDominoTable(scene) {
+  let sceneLength = scene.length;
+  let tableBlock = document.querySelector(".domino-game-table__table");
+  let defaultScale = 1;
+
+  if (!tableBlock) {
+    return;
+  }
+  const screenWidth = window.screen.width;
+
+  if (screenWidth >= 580) {
+    let minScale = 0.6;
+
+    let scaleForOneTile = defaultScale - minScale;
+
+    scaleForOneTile = scaleForOneTile / 28;
+
+    let currScale = defaultScale - scaleForOneTile * sceneLength;
+    // console.log("currScale", currScale);
+    tableBlock.style.transform = `scale(${currScale}) translateY(5%)`;
+  }
+}
+
+export function showEmoji(msg) {
+  const { emojiId, userId } = msg;
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user.userId == userId) {
+    const userBlock = document.querySelector(".domino-game-user");
+    const emoji = document.createElement("div");
+    emoji.classList.add("domino-game-user__emoji");
+    emoji.innerHTML = `<img src="img/emojis/${emojiId}.png" width="64px" />`;
+    userBlock.appendChild(emoji);
+    setTimeout(() => {
+      emoji.remove();
+    }, 3000);
+  } else {
+    const enemyBlock = document.querySelector(
+      `.domino-game-table__enemy-player[userId="${userId}"]`
+    );
+
+    const emoji = document.createElement("div");
+    emoji.classList.add("domino-enemy-player__emoji");
+    emoji.innerHTML = `<img src="img/emojis/${emojiId}.png" width="64px" />`;
+    enemyBlock.appendChild(emoji);
+    setTimeout(() => {
+      emoji.remove();
+    }, 3000);
+  }
+}
+
+export function showPhrase(msg) {
+  const siteLanguage = window.siteLanguage;
+  const { phraseId, userId } = msg;
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user.userId == userId) {
+    // remove previous phrase
+    const existingPhrase = document.querySelector(".domino-game-user__phrase");
+    if (existingPhrase) {
+      existingPhrase.remove();
+    }
+
+    const userBlock = document.querySelector(".domino-game-user");
+    const phrase = document.createElement("div");
+    phrase.classList.add("domino-game-user__phrase");
+    phrase.innerHTML = siteLanguage.dominoPhrases[`phrase${phraseId}`];
+    userBlock.appendChild(phrase);
+    setTimeout(() => {
+      phrase.remove();
+    }, 3000);
+  } else {
+    const enemyBlock = document.querySelector(
+      `.domino-game-table__enemy-player[userId="${userId}"]`
+    );
+
+    const phrase = document.createElement("div");
+    phrase.classList.add("domino-enemy-player__phrase");
+    phrase.innerHTML = siteLanguage.dominoPhrases[`phrase${phraseId}`];
+    enemyBlock.appendChild(phrase);
+    setTimeout(() => {
+      phrase.remove();
+    }, 3000);
+  }
+}
+
+export const updatePlayerScore = (userId, score, addedScore) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (score == 0) {
+    return;
+  }
+
+  impAudio.playTelephonePoints()
+
+  if (user.userId == userId) {
+    const userScore = document.querySelector(".domino-game-user__score span");
+    if (userScore) {
+      userScore.innerHTML = score;
+    }
+
+    // make number in the center of the screen
+    let table = document.querySelector(".domino-game-table");
+    if (table) {
+      const scoreNumber = document.createElement("div");
+      scoreNumber.classList.add("score-number");
+      scoreNumber.innerHTML = `+ ${addedScore}`;
+      table.appendChild(scoreNumber);
+      setTimeout(() => {
+        scoreNumber.remove();
+      }, 800);
+    }
+  } else {
+    // domino-game-table__enemy-player domino-enemy-player domino-enemy-player-3
+
+    const enemyScore = document.querySelector(
+      `.domino-game-table__enemy-player[userId="${+userId}"] span.domino-enemy-player__score`
+    );
+    if (enemyScore) {
+      enemyScore.innerHTML = `${score}/165`;
+    }
+    const enemyBlock = document.querySelector(
+      `.domino-game-table__enemy-player[userId="${+userId}"]`
+    );
+    if (enemyBlock) {
+      const scoreNumber = document.createElement("div");
+      scoreNumber.classList.add("enemy-score-number");
+      scoreNumber.innerHTML = `+ ${addedScore}`;
+      enemyBlock.appendChild(scoreNumber);
+      setTimeout(() => {
+        scoreNumber.remove();
+      }, 800);
+    }
+  }
+};

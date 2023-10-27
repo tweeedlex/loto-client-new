@@ -6,6 +6,7 @@ import * as impNav from "./navigation.js";
 import * as authinterface from "./authinterface.js";
 import * as impDominoNav from "./domino/domino-navigation.js";
 import * as impdominoGame from "./domino/domino-game.js";
+import * as impAudio from "./audio.js";
 
 let preloader = document.querySelector(".page-preloader");
 
@@ -29,9 +30,10 @@ let activeFinishTimers = {
 };
 
 export const connectWebsocketFunctions = () => {
-  // const ws = new WebSocket(`ws://localhost:5001/game`);
   // const ws = new WebSocket(`wss://app.24loto.com/game`);
   const ws = new WebSocket(`wss://loto-server-new.onrender.com/game`);
+  // const ws = new WebSocket(`ws://localhost:5001/game`);
+  // const ws = new WebSocket(`wss://lotogame.onrender.com/game`);
   window.ws = ws;
   let clientId = impLotoNav.createClientId();
 
@@ -55,6 +57,9 @@ export const connectWebsocketFunctions = () => {
 
   ws.onmessage = async (event) => {
     let msg = JSON.parse(event.data);
+    localUser = JSON.parse(localStorage.getItem("user"));
+    let dominoRoomLoader = document.querySelector(".domino-game-loader");
+
     console.log(msg);
     switch (msg.method) {
       case "connectGeneral":
@@ -313,7 +318,6 @@ export const connectWebsocketFunctions = () => {
       // ================== DOMINO ==================
 
       case "connectDomino":
-        localStorage.removeItem("dominoGameScene");
         impDominoNav.addOnlineToTable(msg);
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
@@ -325,6 +329,12 @@ export const connectWebsocketFunctions = () => {
 
       case "getAllDominoInfo":
         await impDominoNav.addDominoRoomsInfo(msg);
+
+        // let dominoWaitingPopup = document.querySelector('.domino-waiting-popup__online')
+        // if(dominoWaitingPopup){
+        //     dominoWaitingPopup.innerHTML = `${online}</span>/${playerMode}`
+        // }
+
         break;
 
       case "startDominoTableTimerMenu":
@@ -343,8 +353,8 @@ export const connectWebsocketFunctions = () => {
           if (!msg.isStarted) {
             impPopup.openDominoWaitingPopup(
               roomOnline,
-              msg.tableId,
               msg.dominoRoomId,
+              msg.tableId,
               msg.playerMode,
               msg.gameMode
             );
@@ -356,26 +366,48 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "startDominoGameTable":
+        impAudio.playGameStarted();
+        localStorage.removeItem("dominoGameScene");
         window.currentTurn = msg.turn;
         impdominoGame.dropTableInfo();
+        console.log(msg.scene);
+        localStorage.setItem("dominoGameScene", JSON.stringify(msg.scene));
         impdominoGame.setDominoTableInfo(msg);
         impdominoGame.setDominoTurn(msg.turn, msg.turnTime);
-        impdominoGame.tilesState(msg.turn, []);
+        impdominoGame.tilesState(msg.turn, [], msg.continued, true);
         impdominoGame.tilesController(
           msg.dominoRoomId,
           msg.tableId,
           msg.playerMode,
           msg.gameMode
         );
+        let roomStartPreloader = document.querySelector(
+          ".domino-game-room__preloader"
+        );
+        if (roomStartPreloader) {
+          roomStartPreloader.remove();
+        }
         break;
 
       case "newDominoTurn":
+        localStorage.setItem("dominoGameScene", JSON.stringify(msg.scene));
+
         window.currentTurn = msg.currentTurn;
         impdominoGame.setDominoTurn(msg.currentTurn, msg.turnTime);
         impdominoGame.tilesState(msg.currentTurn, msg.scene);
+        if (
+          msg.skipedTurn.skipedTurn == true &&
+          msg.skipedTurn.playerId == localUser.userId
+        ) {
+          impdominoGame.showAutoTurnWindow(true);
+        }
 
         if (msg.skipedTurn.skipedTurn) {
           impdominoGame.showSkippedEnemyTurn(msg.skipedTurn.playerId);
+        }
+
+        if (dominoRoomLoader) {
+          dominoRoomLoader.remove();
         }
         break;
 
@@ -389,10 +421,12 @@ export const connectWebsocketFunctions = () => {
 
       case "openTileMarket":
         impdominoGame.openTilesMarket(msg.market);
+
         break;
 
       case "getMarketTile":
         impdominoGame.getMarketTile(msg.tile, msg);
+
         break;
 
       case "updateUserTiles":
@@ -416,15 +450,24 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "winDominoGame":
-        impPopup.openDominoWinGame(msg.winners);
+        impdominoGame.dropTableInfo();
+        authinterface.updateBalance(localUser.balance + msg.prize - msg.bet);
+        impPopup.openDominoWinGame(msg.winners, msg.playersTiles);
+        if (dominoRoomLoader) {
+          dominoRoomLoader.remove();
+        }
         break;
 
       case "endDominoGame":
-        impPopup.openDominoLoseGame(msg.winners);
-
+        impdominoGame.dropTableInfo();
+        authinterface.updateBalance(localUser.balance - msg.lostAmount);
+        impPopup.openDominoLoseGame(msg.winners, msg.playersTiles);
         const userData = JSON.parse(localStorage.getItem("user"));
         userData.balance -= msg.lostAmount;
         localStorage.setItem("user", JSON.stringify(userData));
+        if (dominoRoomLoader) {
+          dominoRoomLoader.remove();
+        }
         break;
 
       case "endAndCloseDominoGame":
@@ -432,27 +475,75 @@ export const connectWebsocketFunctions = () => {
           reason: "createNewWs",
           page: "mainDominoPage",
         };
+
+        let popups = document.querySelectorAll(".popup");
+        popups.forEach((popup) => {
+          popup.remove();
+        });
+        if (dominoRoomLoader) {
+          dominoRoomLoader.remove();
+        }
+
         window.ws.close(1000, JSON.stringify(disconnectDomninoMsg));
-        user = JSON.parse(localStorage.getItem("user"));
-        user.balance += msg.prize;
-        localStorage.setItem("user", JSON.stringify(user));
+
         break;
 
       case "reconnectDominoGame":
-        window.currentTurn = +msg.turn;
-        impdominoGame.reconnectFillTable(msg);
-        // impdominoGame.tablePlacement();
+        localStorage.setItem("dominoGameScene", JSON.stringify(msg.scene));
+        if (msg.turnTime) {
+          window.currentTurn = +msg.turn;
+          impdominoGame.reconnectFillTable(msg);
+          let roomPreloader = document.querySelector(
+            ".domino-game-room__preloader"
+          );
+
+          if (roomPreloader) {
+            roomPreloader.remove();
+          }
+          if (dominoRoomLoader) {
+            dominoRoomLoader.remove();
+          }
+        }
+
+        break;
+
+      case "reconnectEndedDominoGame":
+        impPopup.openFinisedGamePopup();
         break;
 
       case "finishTelephoneRound":
+        impdominoGame.dropTableInfo();
         impPopup.openDominoTelephoneRoundFinishPopup(
           msg.lastWinnerScore,
-          msg.lastWinnerUsername
+          msg.lastWinnerUsername,
+          msg.playersScore,
+          msg.lastWinnerPrevScore,
+          msg.lastWinnerId,
+          msg.playersTiles
         );
+        if (dominoRoomLoader) {
+          dominoRoomLoader.remove();
+        }
         break;
 
       case "notEnoughBalance":
         impPopup.openErorPopup("Недостаточно средств на балансе", 300);
+        break;
+
+      case "sendEmoji":
+        impdominoGame.showEmoji(msg);
+        break;
+
+      case "sendPhrase":
+        impdominoGame.showPhrase(msg);
+        break;
+
+      case "updatePlayerScore":
+        impdominoGame.updatePlayerScore(msg.userId, msg.score, msg.addedScore);
+        break;
+
+      case "updateTableScore":
+        impDominoNav.updateTableScore(msg);
         break;
     }
   };
@@ -465,7 +556,7 @@ export const connectWebsocketFunctions = () => {
       if (navigator.onLine) {
         const newWs = connectWebsocketFunctions();
         window.ws = newWs;
-        location.hash = "";
+        location.hash = "#";
         impNav.pageNavigation(newWs);
         impNav.addHashListeners();
       }
@@ -486,11 +577,18 @@ export const connectWebsocketFunctions = () => {
         console.log(infoReason.page);
         switch (infoReason.page) {
           case "mainLotoPage":
-            location.hash = "";
+            location.hash = "#";
             break;
 
           case "mainDominoPage":
-            console.log("domino-menus");
+            location.hash = "#domino-choose";
+            break;
+
+          case "dominoTelephonePage":
+            location.hash = "#domino-menu-telephone";
+            break;
+
+          case "dominoClassicPage":
             location.hash = "#domino-menu";
             break;
           // default:
@@ -512,15 +610,14 @@ export const connectWebsocketFunctions = () => {
       }
       switch (infoReason.page) {
         case "mainLotoPage":
-          location.hash = "";
+          location.hash = "#";
           break;
 
         case "mainDominoPage":
-          console.log("domino-menuS");
-          location.hash = "#domino-menu";
+          location.hash = "#domino-choose";
           break;
         default:
-          location.hash = "";
+          location.hash = "#";
 
           break;
       }

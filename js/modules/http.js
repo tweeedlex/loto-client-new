@@ -1,6 +1,7 @@
 // export const API_URL = "https://app.24loto.com/api";
-// export const API_URL = "http://localhost:5001/api";
+// export const API_URL = "https://lotogame.onrender.com/api";
 export const API_URL = "https://loto-server-new.onrender.com/api";
+// export const API_URL = "http://localhost:5001/api";
 
 const $api = axios.create({
   withCredentials: false,
@@ -435,6 +436,21 @@ export async function getPlayedGames() {
 export async function getDominoStatus() {
   try {
     const response = await $api.get("/game/domino-status");
+    return await response;
+  } catch (e) {
+    console.log(e.response);
+    return await e.response;
+  }
+}
+
+export async function isDominoStarted(roomId, tableId, playerMode, gameMode) {
+  try {
+    const response = await $api.post("/game/domino-isstarted", {
+      roomId,
+      tableId,
+      playerMode,
+      gameMode,
+    });
     return await response;
   } catch (e) {
     console.log(e.response);

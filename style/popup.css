@@ -916,3 +916,18 @@
   font-size: 16px;
   cursor: pointer;
 }
+
+/* gameFinishedPopup */
+.domino-finishedGameAlert-popup {
+  position: relative;
+  padding-top: 50px;
+}
+.domino-finishedGameAlert-popup .preloader {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  transform: scale(0.3);
+}
+
+.domino-finishedGameAlert-popup__text {
+}

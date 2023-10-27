@@ -352,12 +352,17 @@ export function updateAllRoomsJackpot(jackpots) {
   }
 }
 
-export function animateNumberChange(element, startValue, endValue) {
+export function animateNumberChange(
+  element,
+  startValue,
+  endValue,
+  acceleration = 1
+) {
   const duration = 2000;
   const framesPerSecond = 60;
   const frameDuration = Math.floor(1000 / framesPerSecond);
   const frames = Math.ceil(duration / frameDuration);
-  const increment = (endValue - startValue) / frames;
+  const increment = ((endValue - startValue) / frames) * acceleration;
 
   let currentFrame = 0;
   let currentValue = startValue;

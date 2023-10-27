@@ -25,7 +25,7 @@ impNav.applyDefaultSettings();
 impNav.addUnauthorizedHashListeners();
 
 if (await impAuth.isAuth()) {
-  preloader.classList.remove("d-none");
+  // preloader.classList.remove("d-none");
   location.hash = "";
   impNav.hideAuthorization();
 
@@ -37,28 +37,12 @@ if (await impAuth.isAuth()) {
   impNav.addHashListeners(ws);
   // impNav.addHashListenersWS(ws);
 
-  // проверка на активные игры лото в даный момент
-  const ticketsResponce = await impHttp.getTickets();
-  if (ticketsResponce.status == 200) {
-    let userTickets = ticketsResponce.data;
-    if (userTickets.length == 0) {
-      impNav.addListeners(ws);
-      preloader.classList.add("d-none");
-    } else {
-    }
-  }
-
-  // проверка на активные игры домино
-  const dominoResponse = await impHttp.getDominoStatus();
-  const inDominoGameStatus = dominoResponse.data.message;
-  if (inDominoGameStatus) {
-    const { roomId, tableId, playerMode, gameMode } =
-      dominoResponse.data.roomInfo;
-    window.location.hash = `domino-room-table/${roomId}/${tableId}/${playerMode}/${gameMode.toUpperCase()}`;
-  }
-
-  preloader.classList.add("d-none");
+  impNav.addListeners(ws);
+  // preloader.classList.add("d-none");
 }
+
+// розблокировать чат после f5 а то он будет заблочен
+window.isChatBlocked = false;
 
 // если сайт стал офлайн то показываем окно ошибки
 

@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
 
+body {
+  background-color: #922e4f;
+}
+
 main {
   background: url("../img/bg.png") no-repeat 0 0 / cover;
 }
@@ -37,6 +41,13 @@ a {
   background: #00000065;
   backdrop-filter: blur(5px);
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-preloader .lds-ring {
+  transform: scale(0.8);
 }
 .d-none {
   /* display: none !important; */

@@ -113,42 +113,10 @@
   border: 3px solid #d6c062;
 }
 
-.domino-room-table-quater {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  border: 1px solid #d6c062;
-  background-color: #2e8f43;
-}
-
-.domino-room-table-quater.filled {
+.domino-room-table-part.filled {
   background-color: #da5e5e;
 }
-
-.domino-room-table-quater.filled::before {
-  content: "";
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  top: calc(50% - 7.5px);
-  left: calc(50% - 7.5px);
-}
-
-.domino-room-table-half {
-  width: 50%;
-  height: 100%;
-  background-color: #2e8f43;
-  position: relative;
-  border: 1px solid #d6c062;
-}
-
-.domino-room-table-half.filled {
-  background-color: #da5e5e;
-}
-
-.domino-room-table-half.filled::before {
+.domino-room-table-part.filled::before {
   content: "";
   position: absolute;
   width: 20px;
@@ -159,7 +127,60 @@
   left: calc(50% - 10px);
 }
 
+.domino-room-table-quater {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border: 1px solid #d6c062;
+  background-color: #2e8f43;
+}
+
+/* .domino-room-table-quater.filled {
+  background-color: #da5e5e;
+} */
+
+/* .domino-room-table-quater.filled::before {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  top: calc(50% - 7.5px);
+  left: calc(50% - 7.5px);
+} */
+
+.domino-room-table-half {
+  width: 50%;
+  height: 100%;
+  background-color: #2e8f43;
+  position: relative;
+  border: 1px solid #d6c062;
+}
+
+/* .domino-room-table-half.filled {
+  background-color: #da5e5e;
+} */
+/* 
+.domino-room-table-half.filled::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid #000;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+} */
+.domino-choose {
+  height: 100%;
+  display: flex;
+  /* align-items: center; */
+  justify-content: center;
+  flex-direction: column;
+}
 .domino-choose__button {
+  width: 100%;
   border: 3px solid #d6c062;
   border-radius: 5px;
   display: flex;
@@ -180,10 +201,10 @@
 .domino-choose__button.classic {
   /* background filter */
   background: linear-gradient(
-    180deg,
-    rgba(87, 36, 49, 0.5) 0%,
-    rgba(87, 36, 43, 0.5) 100%
-  ),
+      180deg,
+      rgba(87, 36, 49, 0.5) 0%,
+      rgba(87, 36, 43, 0.5) 100%
+    ),
     url("../../img/domino/domino-classic.jpg");
 }
 

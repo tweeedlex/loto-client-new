@@ -941,8 +941,9 @@ async function openUserGames() {
   let siteLanguage = window.siteLanguage;
   let main = document.querySelector(".main__container");
   if (main) {
-    const userGames = await impHttp.getUserGames();
-
+    const {data} = await impHttp.getUserGames();
+    const {lotoGames, dominoGames} = data;
+    console.log(data, lotoGames)
     main.innerHTML = `
       <div class="main__container">
         <section class="user-game-history">
@@ -970,7 +971,7 @@ async function openUserGames() {
     }
 
     let mainBlock = document.querySelector(".user-game-history__main");
-    userGames.data.forEach((game, index) => {
+    lotoGames.forEach((game, index) => {
       // создаем игру с истории юзера
       game.tickets = JSON.parse(game.tickets);
       game.casks = JSON.parse(game.casks);
@@ -981,6 +982,7 @@ async function openUserGames() {
         `${game.isWinner ? "won" : "lose"}`,
         `game-item-${index}`
       );
+      gameitem.setAttribute("date", game.createdAt)
       gameitem.innerHTML = `
         <div class="game-item__tickets-block">
           <!-- tickets -->
@@ -1040,7 +1042,7 @@ async function openUserGames() {
       if (ticketsBodyBlock) {
         createHistoryUserTickets(
           ticketsBodyBlock,
-          userGames.data[index].tickets
+          lotoGames[index].tickets
         );
       }
 
@@ -1051,6 +1053,40 @@ async function openUserGames() {
         main.classList.remove("footer__padding");
       }
     });
+
+    dominoGames.forEach((game, index) => {
+      let gameitem = document.createElement("div");
+      gameitem.classList.add(
+        "user-game__item",
+        "game-item",
+        `${game.isWinner ? "won" : "lose"}`,
+        `game-item-${index}`
+      );
+      gameitem.setAttribute("date", game.createdAt)
+
+      gameitem.innerHTML = `
+        <p>Домино</p>
+        <p>Игра ${game.isWinner ? "выиграна" : "проиграна"}!</p>
+        ${game.isWinner ? `<p>Выигрыш: ${game.winSum.toFixed(2)}₼</p>` : ""}
+        <p>Комната: ${game.roomId}</p>
+        <p>Стол: ${game.tableId}</p>
+        <p>Количество игроков: ${game.playerMode}</p>
+        <p>Режим: ${game.gameMode == "CLASSIC" ? "классический" : "телефон"}</p>
+      `
+
+      mainBlock.insertBefore(gameitem, mainBlock.firstChild);
+    })
+
+    // sort all games by date
+    let games = document.querySelectorAll(".game-item");
+    games = [...games];
+    games.sort((a, b) => {
+      return new Date(b.getAttribute("date")) - new Date(a.getAttribute("date"));
+    });
+    games.forEach((game) => {
+      mainBlock.appendChild(game);
+    });
+    
   }
 }
 

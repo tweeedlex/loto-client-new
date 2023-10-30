@@ -815,8 +815,20 @@ function placeVericalTilesBlock3(
     `.domino-game-table__table-tiles-block[id="${1}"]`
   );
 
-  let block5Elements = block5.querySelectorAll(".domino-game-table__tile");
-  let block1Elements = block1.querySelectorAll(".domino-game-table__tile");
+  let block6Elements = newBlock6.querySelectorAll(".domino-game-table__tile");
+  let block7Elements = newBlock7.querySelectorAll(".domino-game-table__tile");
+  let block8Elements = newBlock8.querySelectorAll(".domino-game-table__tile");
+  let block9Elements = newBlock9.querySelectorAll(".domino-game-table__tile");
+
+  // если в 6 блоке последняя перевернутая то повертаем ее обратно
+  if (block7Elements.length > 0) {
+    let lastElement = block6Elements[0];
+    lastElement.classList.remove("rotated");
+  }
+  if (block9Elements.length > 0) {
+    let lastElement = block8Elements[block8Elements.length - 1];
+    lastElement.classList.remove("rotated");
+  }
 
   // нормальная x координата для перевернутой вертикально
   let newBlock6XCoord =
@@ -847,10 +859,6 @@ function placeVericalTilesBlock3(
 
   newBlock7.style.left = `${newBlock7XCoord}px`;
   newBlock7.style.top = `${newBlock7YCoord}px`;
-
-  // если 5 блок пустой то делаем ряд прямой =====================================================================================
-  if (block5Elements.length == 0) {
-  }
 
   // =============================================================================================================================
 
@@ -2215,15 +2223,173 @@ export const getMarketTile = (tile, msg) => {
   // подсвечиваем если доминошка подходит
   tilesState(msg.turn, msg.scene);
 
-  // добавляем функционал на доминошку
-  // addTileFunction(
-  //   userTile,
-  //   msg.dominoRoomId,
-  //   msg.tableId,
-  //   msg.playerMode,
-  //   msg.gameMode
-  // );
-  tilesController(msg.dominoRoomId, msg.tableId, msg.playerMode, msg.gameMode);
+  // добавляем функционал на доминошку для систер тайла и потом для обычного
+  let addedSisterTileListener = false;
+  if (msg.gameMode == "CLASSIC") {
+    // get left and right from tile element, from class of half of tile
+    const left = +userTile
+      .querySelector(".domino-tile__half:first-child")
+      .classList[1].split("-")[2];
+
+    const right = +userTile
+      .querySelector(".domino-tile__half:last-child")
+      .classList[1].split("-")[2];
+
+    // get id from tile element
+    const id = userTile.getAttribute("tileid");
+
+    const tableTiles = document.querySelectorAll(".domino-game-table__tile");
+
+    const leftTile = tableTiles[0];
+    const sceneLeft = +leftTile
+      .querySelector(".domino-game-table__tile-half:first-child")
+      .classList[1].split("-")[3];
+    const rightTile = tableTiles[tableTiles.length - 1];
+    const sceneRight = +rightTile
+      .querySelector(".domino-game-table__tile-half:last-child")
+      .classList[1].split("-")[3];
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    console.log(sceneLeft, sceneRight, left, right);
+
+    if (
+      (sceneLeft == sceneRight && (sceneLeft == left || sceneLeft == right)) ||
+      (left == sceneLeft && right == sceneRight) ||
+      (left == sceneRight && right == sceneLeft)
+    ) {
+      userTile.classList.remove("highlight");
+      userTile.classList.add("sister-highlight");
+      addTwoTilesEventListeners(
+        { left, right, id },
+        msg.dominoRoomId,
+        msg.tableId,
+        msg.playerMode,
+        msg.gameMode,
+        leftTile,
+        rightTile,
+        user,
+        userTile
+      );
+      addedSisterTileListener = true;
+    }
+  } else {
+    let scene = localStorage.getItem("dominoGameScene");
+    // console.log(scene);
+
+    scene = JSON.parse(scene);
+    const tilesAmount = countTiles(scene);
+
+    let middleRow = scene[Math.floor(scene.length / 2)];
+    let leftTile = null;
+    let rightTile = null;
+    for (let i = 0; i < middleRow.length; i++) {
+      if (middleRow[i]?.id >= 0 && !leftTile) {
+        leftTile = middleRow[i];
+      }
+    }
+    for (let i = middleRow.length - 1; i >= 0; i--) {
+      if (middleRow[i]?.id >= 0 && !rightTile) {
+        rightTile = middleRow[i];
+      }
+    }
+
+    let { top, bottom } = findVerticalCorners(scene);
+
+    const left = +userTile
+      .querySelector(".domino-tile__half:first-child")
+      .classList[1].split("-")[2];
+    const right = +userTile
+      .querySelector(".domino-tile__half:last-child")
+      .classList[1].split("-")[2];
+    const id = +userTile.getAttribute("tileid");
+
+    let corners = [];
+    if (leftTile && rightTile) {
+      if (top && bottom) {
+        corners = [
+          { value: top.left, side: "top", id: top.id },
+          { value: bottom.right, side: "bottom", id: bottom.id },
+          { value: leftTile.left, side: "left", id: leftTile.id },
+          { value: rightTile.right, side: "right", id: rightTile.id },
+        ];
+      } else {
+        corners = [
+          { value: leftTile.left, side: "left", id: leftTile.id },
+          { value: rightTile.right, side: "right", id: rightTile.id },
+        ];
+        // get double tiles in middle row
+        let doubleTiles = [];
+        middleRow.forEach((tile) => {
+          if (tile?.left == tile?.right) {
+            doubleTiles.push(tile);
+          }
+        });
+
+        let availableDoubles = [];
+
+        // console.log(availableDoubles, "avaialable doubles");
+
+        doubleTiles.forEach((tile) => {
+          // check if on the right and left of double there are tiles
+          const leftTile = middleRow[middleRow.indexOf(tile) - 1];
+          const rightTile = middleRow[middleRow.indexOf(tile) + 1];
+          if (
+            leftTile &&
+            rightTile &&
+            leftTile?.id >= 0 &&
+            rightTile?.id >= 0
+          ) {
+            availableDoubles.push(tile);
+          }
+        });
+
+        availableDoubles.forEach((doubleTile) => {
+          corners.push({
+            value: doubleTile.left,
+            side: "top",
+            id: doubleTile.id,
+          });
+        });
+      }
+    }
+
+    const sisterCorners = [];
+
+    corners.forEach((corner) => {
+      if (corner.value == left || corner.value == right) {
+        sisterCorners.push(corner);
+      }
+    });
+    if (sisterCorners.length > 1 && tilesAmount > 1) {
+      userTile.classList.remove("highlight");
+      userTile.classList.add("sister-highlight");
+
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      addTelephoneSisterEventListeners(
+        { left, right, id },
+        msg.dominoRoomId,
+        msg.tableId,
+        msg.playerMode,
+        msg.gameMode,
+        sisterCorners,
+        user
+      );
+      addedSisterTileListener = true;
+    }
+  }
+  console.log(addedSisterTileListener);
+  if (!addedSisterTileListener) {
+    addTileFunction(
+      userTile,
+      msg.dominoRoomId,
+      msg.tableId,
+      msg.playerMode,
+      msg.gameMode
+    );
+  }
+  // tilesController(msg.dominoRoomId, msg.tableId, msg.playerMode, msg.gameMode);
 
   let marketPopup = document.querySelector(".market-popup");
 
@@ -2234,7 +2400,6 @@ export const getMarketTile = (tile, msg) => {
     marketTiles.forEach((tile) => {
       tile.classList.add("available");
     });
-    // добавить систр тайл
   }
 };
 
@@ -3265,11 +3430,11 @@ export function showPhrase(msg) {
 export const updatePlayerScore = (userId, score, addedScore) => {
   const user = JSON.parse(localStorage.getItem("user"));
 
-  if (score == 0) {
+  if (score == 0 || addedScore == 0) {
     return;
   }
 
-  impAudio.playTelephonePoints()
+  impAudio.playTelephonePoints();
 
   if (user.userId == userId) {
     const userScore = document.querySelector(".domino-game-user__score span");

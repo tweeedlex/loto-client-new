@@ -319,6 +319,8 @@ export const connectWebsocketFunctions = () => {
 
       case "connectDomino":
         impDominoNav.addOnlineToTable(msg);
+        impDominoNav.startTableTimer(msg);
+
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         if (msg.userId == user.userId) {
@@ -329,7 +331,7 @@ export const connectWebsocketFunctions = () => {
 
       case "getAllDominoInfo":
         await impDominoNav.addDominoRoomsInfo(msg);
-
+        await impDominoNav.setRoomsTimers(msg);
         // let dominoWaitingPopup = document.querySelector('.domino-waiting-popup__online')
         // if(dominoWaitingPopup){
         //     dominoWaitingPopup.innerHTML = `${online}</span>/${playerMode}`
@@ -356,7 +358,8 @@ export const connectWebsocketFunctions = () => {
               msg.dominoRoomId,
               msg.tableId,
               msg.playerMode,
-              msg.gameMode
+              msg.gameMode,
+              msg.startedWaitingAt
             );
           }
         } else {

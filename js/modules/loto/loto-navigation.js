@@ -210,7 +210,7 @@ export async function NowClientTime() {
     {
       headers: {
         "Content-Type": "application/json",
-        "X-Api-Key": "rpWZR9MlW23ZoAcHMLIWhw==KcixnFSk5PKTcK58",
+        "X-Api-Key": "4ZE5RU9AkYoQGk2408oxPA==OMgU32Wvms9parSt",
       },
     }
   );
@@ -235,7 +235,8 @@ export async function NowClientTime() {
   // console.log("now time", new Date().getTime());
   // console.log("api time", time);
 
-  return timeHands - 180 * 60 * 1000;
+  // return timeHands - 180 * 60 * 1000;
+  // return timeHands - 120 * 60 * 1000;
   // return timeHands;
 }
 

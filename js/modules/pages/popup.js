@@ -613,12 +613,13 @@ export function openChangeLanguage() {
   body.appendChild(popupElement);
 }
 
-export const openDominoWaitingPopup = (
+export const openDominoWaitingPopup = async (
   online,
   dominoRoomId,
   tableId,
   playerMode,
-  gameMode
+  gameMode,
+  startTime
 ) => {
   if (isPopupOpened()) {
     return;
@@ -631,7 +632,12 @@ export const openDominoWaitingPopup = (
     <div class="popup">
       <div class="popup__body">
         <div class="popup__content domino-waiting-popup">
-          <div class="popup__header"></div>
+          <div class="popup__header">
+            <div class="popup__timer">
+            <img src="img/timer-icon.png" alt="timer" /> 
+            <span class="domino-waiting-popup__timer">00:00</span>
+          </div>
+          </div>
           <div class="popup__text domino-waiting-popup__text">
             <p><span class="domino-waiting-popup__online">${online}</span>/${playerMode}</p>
             <p>Идет подбор игроков...</p>
@@ -647,6 +653,31 @@ export const openDominoWaitingPopup = (
 
   body.appendChild(popupElement);
 
+  let timerTimeout = null;
+  // таймер
+  const timerBlock = document.querySelector(".domino-waiting-popup__timer");
+  // считаем время которое прошло, startTime - время начала ожидания
+
+  const targetTime = new Date(startTime).getTime();
+  let nowClientTime = await impLotoNav.NowClientTime();
+
+  let distance = nowClientTime - targetTime;
+
+  timerTimeout = setInterval(async () => {
+    distance += 200;
+
+    const minutes = Math.floor(distance / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    // Add leading zeros for formatting
+    const formattedMinutes = String(minutes).padStart(2, "0");
+    const formattedSeconds = String(seconds).padStart(2, "0");
+    if (timerBlock) {
+      timerBlock.innerHTML = `${formattedMinutes}:${formattedSeconds}`;
+    }
+  }, 200);
+
+  // кнопки выхода
   const quitWainingButton = popupElement.querySelector(
     ".domino-waiting-popup__button-room"
   );
@@ -675,6 +706,7 @@ export const openDominoWaitingPopup = (
 
     if (websocket && websocket.readyState == 1) {
       console.log("close ws");
+      clearInterval(timerTimeout);
       websocket.close(
         3001,
         JSON.stringify({
@@ -685,7 +717,6 @@ export const openDominoWaitingPopup = (
         })
       );
     }
-
     close(popupElement);
   });
 
@@ -706,6 +737,8 @@ export const openDominoWaitingPopup = (
 
     if (websocket && websocket.readyState == 1) {
       console.log("close ws");
+      clearInterval(timerTimeout);
+
       websocket.close(
         3001,
         JSON.stringify({
@@ -800,10 +833,8 @@ export const openDominoWinGame = (winners, playersTiles) => {
     <div class="popup">
       <div class="popup__body">
         <div class="popup__content domino-win-popup">
-          <div class="popup__header">
-            <img src="img/win-icon.png" alt="win" />
-          </div>
           <div class="popup__text domino-win-popup__text">
+            <p>Игра закрылась</p>
             <p>Победители:</p>
             ${winnersList}
           </div>
@@ -831,10 +862,8 @@ export const openDominoLoseGame = (winners, playersTiles) => {
     <div class="popup">
       <div class="popup__body">
         <div class="popup__content domino-lose-popup">
-          <div class="popup__header">
-            <img src="img/lose-icon.png" alt="lose" />
-          </div>
           <div class="popup__text domino-lose-popup__text">
+            <p>Игра закрылась</p>
             <p>К сожалению, вы проиграли</p>
             <p>Победители:</p>
             ${winnersList}
@@ -847,19 +876,33 @@ export const openDominoLoseGame = (winners, playersTiles) => {
   `;
   main.appendChild(popupElement);
 
-  formPopupTiles(playersTiles, popupElement);
+  formPopupTiles(playersTiles, popupElement, true);
 };
 
-const formPopupTiles = (playersTiles, popupElement) => {
+const formPopupTiles = (playersTiles, popupElement, countPoints) => {
   const tilesBlock = popupElement.querySelector(".domino-lose-popup__tiles");
-  console.log(playersTiles);
   playersTiles.forEach((playerTiles) => {
+    console.log("playerTiles", playerTiles);
+    if (countPoints) {
+      playerTiles.points = 0;
+      playerTiles.tiles.forEach((tile) => {
+        playerTiles.points += tile.left + tile.right;
+      });
+    }
     tilesBlock.innerHTML += `
       <div>
         <p style="width:100%;background-color:#000;height:2px;margin:10px 0;"></p>
-        Игрок ${playerTiles.username} ${
-      playerTiles.points ? "Очки:" + playerTiles.points : ""
-    }. Костяшки:
+        Игрок ${playerTiles.username}. ${
+      playerTiles.points ? "Очки: " + playerTiles.points : ""
+    } 
+        ${
+          playerTiles.tiles.length == 1 &&
+          playerTiles.tiles[0].left == 0 &&
+          playerTiles.tiles[0].right == 0
+            ? "(Начислено 10 очков)"
+            : ""
+        }
+        Костяшки:
       </div>
       <div class="domino-lose-popup__player-tiles domino-lose-popup__player-tiles-${
         playerTiles.userId

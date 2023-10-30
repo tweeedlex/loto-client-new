@@ -130,10 +130,12 @@ function createChoosePlayersButtons(main__container, isTwoPlayers) {
 
   chooseTwoPlayersButton.addEventListener("click", () => {
     openDominoMenuPage(true, null, gameMode);
+    clearAllTimers();
   });
 
   chooseFourPlayersButton.addEventListener("click", () => {
     openDominoMenuPage(false, null, gameMode);
+    clearAllTimers();
   });
 
   main__container.appendChild(choosePlayersBlock);
@@ -687,14 +689,380 @@ export function openDominoTable(
   });
 }
 
+// let currTimers = [
+//   { roomid: 1, tableid: 2, playerMode: 2, gameMode: "TELEPHONE", timer: 2 },
+//   { roomid: 4, tableid: 5, playerMode: 4, gameMode: "CLASSIC", timer: 5 },
+//   { roomid: 5, tableid: 2, playerMode: 4, gameMode: "TELEPHONE", timer: 3 },
+//   { roomid: 3, tableid: 1, playerMode: 2, gameMode: "CLASSIC", timer: 1 },
+// ];
+
+let currTimers = [];
+
+// export const setRoomsTimers = async (msg) => {
+//   // чистим таймеры когда комнат нету в меседже
+
+//   // если меседж пустой значит чистим все комнаты
+//   if (msg.dominoInfo.length == 0) {
+//     currTimers.forEach((timerItem) => {
+//       if (timerItem) {
+//         clearInterval(timerItem.timer);
+//         let timerBlock = null;
+//         if (timerItem.gameMode == "TELEPHONE") {
+//           timerBlock = document.querySelector(
+//             `.domino-room-players-${timerItem.playerMode}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-telephone .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
+//           );
+//         } else {
+//           timerBlock = document.querySelector(
+//             `.domino-room-players-${timerItem.playerModee}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
+//           );
+//         }
+//         if (timerBlock) {
+//           timerBlock.innerHTML = `00:00`;
+//         }
+//       }
+//     });
+//   }
+
+//   // проверяем какие комнаты есть в currTimers и какие нам пришли, те которых нету в пришедших чистим с currTimers
+
+//   if (msg.dominoInfo.length != 0) {
+//     let exisitngTimersOnPage = [];
+//     for (const room of msg.dominoInfo) {
+//       for (const table of room.tables) {
+//         // Функция для поиска элементов по заданным условиям
+//         function findElements(array, conditions) {
+//           return array.filter((item) => {
+//             for (let key in conditions) {
+//               if (item[key] !== conditions[key]) {
+//                 return false;
+//               }
+//             }
+//             return true;
+//           });
+//         }
+
+//         // Условия поиска
+//         let searchConditions = {
+//           roomid: room.dominoRoomId,
+//           tableid: table.tableId,
+//           playerMode: room.playerMode,
+//           gameMode: room.gameMode,
+//         };
+
+//         // Поиск элементов
+//         let foundedEls = findElements(currTimers, searchConditions);
+//         foundedEls.forEach((el) => {
+//           exisitngTimersOnPage.push(el);
+//         });
+//       }
+//     }
+//     console.log(currTimers);
+//     console.log(exisitngTimersOnPage);
+//     currTimers = currTimers.filter((item) => {
+//       if (exisitngTimersOnPage.includes(item)) {
+//         clearInterval(item.timer);
+//         return false; // Вернуть false для удаления элемента из массива
+//       }
+//       return true; // Вернуть true для сохранения элемента в массиве
+//     });
+//     console.log(currTimers);
+//   }
+
+//   let nowClientTime = await impLotoNav.NowClientTime();
+
+//   // устанавливаем таймеры
+//   for (const room of msg.dominoInfo) {
+//     for (const table of room.tables) {
+//       let timerBlock = null;
+//       if (room.gameMode == "TELEPHONE") {
+//         timerBlock = document.querySelector(
+//           `.domino-room-players-${room.playerMode}[dominoRoomId="${room.dominoRoomId}"].domino-room-mode-telephone .domino-room-content__table[tableId="${table.tableId}"] .domino-room-table-info__timer`
+//         );
+//       } else {
+//         timerBlock = document.querySelector(
+//           `.domino-room-players-${room.playerMode}[dominoRoomId="${room.dominoRoomId}"].domino-room-mode-classic .domino-room-content__table[tableId="${table.tableId}"] .domino-room-table-info__timer`
+//         );
+//       }
+
+//       if (timerBlock) {
+//         console.log(table.startedWaitingAt);
+//         console.log(timerBlock);
+//         if (table.startedWaitingAt) {
+//           const targetTime = new Date(table.startedWaitingAt).getTime();
+
+//           let distance = nowClientTime - targetTime;
+
+//           // проверка если уже есть такой таймер то удаляем его
+
+//           let existedElements = [];
+//           currTimers.forEach((timer) => {
+//             if (
+//               timer.roomid === room.dominoRoomId &&
+//               timer.tableid === table.tableId &&
+//               timer.playerMode === room.playerMode &&
+//               timer.gameMode === room.gameMode
+//             ) {
+//               existedElements.push(timer);
+//             }
+//           });
+
+//           console.log("existedElements" + " ", existedElements);
+//           existedElements.forEach((item) => {
+//             clearInterval(item.timer);
+//           });
+
+//           // создаем новый интервал
+//           let timerTntervalNum = setInterval(async () => {
+//             distance += 200;
+
+//             const minutes = Math.floor(distance / (1000 * 60));
+//             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+//             // Add leading zeros for formatting
+//             const formattedMinutes = String(minutes).padStart(2, "0");
+//             const formattedSeconds = String(seconds).padStart(2, "0");
+//             if (timerBlock) {
+//               timerBlock.innerHTML = `${formattedMinutes}:${formattedSeconds}`;
+//             }
+//           }, 200);
+
+//           currTimers.push({
+//             roomid: room.dominoRoomId,
+//             tableid: table.tableId,
+//             playerMode: room.playerMode,
+//             gameMode: room.gameMode,
+//             timer: timerTntervalNum,
+//           });
+//         }
+//       }
+//     }
+//   }
+// };
+
+export const startTableTimer = async (msg) => {
+  let timerBlock = null;
+  if (msg.gameMode == "TELEPHONE") {
+    timerBlock = document.querySelector(
+      `.domino-room-players-${msg.playerMode}[dominoRoomId="${msg.dominoRoomId}"].domino-room-mode-telephone .domino-room-content__table[tableId="${msg.tableId}"] .domino-room-table-info__timer`
+    );
+  } else {
+    timerBlock = document.querySelector(
+      `.domino-room-players-${msg.playerMode}[dominoRoomId="${msg.dominoRoomId}"].domino-room-mode-classic .domino-room-content__table[tableId="${msg.tableId}"] .domino-room-table-info__timer`
+    );
+  }
+
+  console.log(timerBlock);
+
+  if (timerBlock && timerBlock.innerHTML.includes("00:00")) {
+    let distance = 0;
+
+    // создаем новый интервал
+    let timerTntervalNum = setInterval(async () => {
+      distance += 200;
+
+      const minutes = Math.floor(distance / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Add leading zeros for formatting
+      const formattedMinutes = String(minutes).padStart(2, "0");
+      const formattedSeconds = String(seconds).padStart(2, "0");
+      if (timerBlock) {
+        timerBlock.innerHTML = `${formattedMinutes}:${formattedSeconds}`;
+      }
+    }, 200);
+
+    currTimers.push({
+      roomid: msg.roomid,
+      tableid: msg.tableid,
+      playerMode: msg.playerMode,
+      gameMode: msg.gameMode,
+      timer: timerTntervalNum,
+    });
+  }
+};
+
+export const clearAllTimers = () => {
+  currTimers.forEach((timerItem) => {
+    if (timerItem) {
+      let timerBlock = null;
+      if (timerItem.gameMode == "TELEPHONE") {
+        timerBlock = document.querySelector(
+          `.domino-room-players-${timerItem.playerMode}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-telephone .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
+        );
+      } else {
+        timerBlock = document.querySelector(
+          `.domino-room-players-${timerItem.playerMode}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
+        );
+      }
+      // find block that has shows of this table
+      // const onlineBlock = document.querySelector(
+      //   `.domino-room-players-${timerItem.playerMode}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__players span`
+      // );
+      if (timerBlock) {
+        timerBlock.innerHTML = `00:00`;
+        clearInterval(timerItem.timer);
+      }
+    }
+  });
+  currTimers = [];
+};
+
+export const setRoomsTimers = async (msg) => {
+  let msgRooms = [];
+  console.log("чистим таймеры");
+  clearAllTimers();
+
+  for (const room of msg.dominoInfo) {
+    for (const table of room.tables) {
+      msgRooms.push({
+        roomid: room.dominoRoomId,
+        tableid: table.tableId,
+        playerMode: room.playerMode,
+        gameMode: room.gameMode,
+        startedWaitingAt: table.startedWaitingAt,
+      });
+    }
+  }
+
+  for (const room of msgRooms) {
+    let timerBlock = null;
+    if (room.gameMode == "TELEPHONE") {
+      timerBlock = document.querySelector(
+        `.domino-room-players-${room.playerMode}[dominoRoomId="${room.roomid}"].domino-room-mode-telephone .domino-room-content__table[tableId="${room.tableid}"] .domino-room-table-info__timer`
+      );
+    } else {
+      timerBlock = document.querySelector(
+        `.domino-room-players-${room.playerMode}[dominoRoomId="${room.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${room.tableid}"] .domino-room-table-info__timer`
+      );
+    }
+    let currentExistingTimers = currTimers.filter((item) => {
+      return (
+        item.roomid == room.roomid &&
+        item.tableid == room.tableid &&
+        item.playerMode == room.playerMode &&
+        item.gameMode == room.gameMode
+      );
+    });
+    if (timerBlock) {
+      if (currentExistingTimers.length > 0) {
+        // return;
+      }
+    } else {
+      if (currentExistingTimers.length > 0) {
+        currentExistingTimers.forEach((timer) => {
+          currTimers.forEach((currTimer) => {
+            if (currTimer == timer) {
+              clearInterval(currTimer.timer);
+              currTimers.splice(currTimers.indexOf(currTimer), 1);
+            }
+          });
+          console.log("cleared", currTimers);
+        });
+      }
+    }
+  }
+
+  // currTimers = [];
+  let nowClientTime = await impLotoNav.NowClientTime();
+
+  // устанавливаем таймеры
+  console.log("устанавливаем таймеры");
+
+  // { roomid: 3, tableid: 1, playerMode: 2, gameMode: "CLASSIC", timer: 1 }
+  for (const room of msgRooms) {
+    console.log(currTimers);
+
+    // check if timer is already in currtimers
+    const existingTimer = currTimers.find(
+      (timer) =>
+        timer.roomid == room.roomid &&
+        timer.tableid == room.tableid &&
+        timer.playerMode == room.playerMode &&
+        timer.gameMode == room.gameMode
+    );
+
+    if (!existingTimer) {
+      console.log(
+        room.roomid +
+          " " +
+          room.tableid +
+          " " +
+          room.playerMode +
+          " " +
+          room.gameMode,
+        "worked"
+      );
+      let timerBlock = null;
+      if (room.gameMode == "TELEPHONE") {
+        timerBlock = document.querySelector(
+          `.domino-room-players-${room.playerMode}[dominoRoomId="${room.roomid}"].domino-room-mode-telephone .domino-room-content__table[tableId="${room.tableid}"] .domino-room-table-info__timer`
+        );
+      } else {
+        timerBlock = document.querySelector(
+          `.domino-room-players-${room.playerMode}[dominoRoomId="${room.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${room.tableid}"] .domino-room-table-info__timer`
+        );
+      }
+
+      if (timerBlock) {
+        if (room.startedWaitingAt) {
+          const targetTime = new Date(room.startedWaitingAt).getTime();
+
+          let distance = nowClientTime - targetTime;
+
+          // создаем новый интервал
+          let timerTntervalNum = setInterval(async () => {
+            distance += 200;
+
+            const minutes = Math.floor(distance / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Add leading zeros for formatting
+            const formattedMinutes = String(minutes).padStart(2, "0");
+            const formattedSeconds = String(seconds).padStart(2, "0");
+            if (timerBlock) {
+              timerBlock.innerHTML = `${formattedMinutes}:${formattedSeconds}`;
+            }
+          }, 200);
+
+          currTimers.push({
+            roomid: room.roomid,
+            tableid: room.tableid,
+            playerMode: room.playerMode,
+            gameMode: room.gameMode,
+            timer: timerTntervalNum,
+          });
+        }
+      } else {
+        // if (findCurrExistingTimers.length > 0) {
+        //   findCurrExistingTimers.forEach((timer) => {
+        //     clearInterval(timer.timer);
+        //     currTimers.forEach((currTimer) => {
+        //       if (currTimer == timer) {
+        //         currTimers.splice(currTimers.indexOf(currTimer), 1);
+        //       }
+        //     });
+        //     console.log("cleared", currTimers);
+        //   });
+        // }
+      }
+    }
+  }
+};
+
+export const setRoomTimer = async (msg) => {
+  const { dominoRoomId, tableId, playerMode, gameMode } = msg;
+};
+
 export const updateTableScore = (msg) => {
-  const {roomId, tableId, playerMode, gameMode} = msg;
+  const { roomId, tableId, playerMode, gameMode } = msg;
   // check if user is on right page width playerMode and gameMode
   // check gameMode by hash
   const hash = window.location.hash.split("/");
-  if (gameMode != (hash == "#domino-menu-telephone" ? "TELEPHONE" : "CLASSIC")) {
-    return
-  };
+  if (
+    gameMode != (hash == "#domino-menu-telephone" ? "TELEPHONE" : "CLASSIC")
+  ) {
+    return;
+  }
 
   // check playerMode by checking if button is active
   const choosePlayersButtons = document.querySelectorAll(
@@ -715,4 +1083,4 @@ export const updateTableScore = (msg) => {
   if (!tableBlock) return;
   const tableScore = tableBlock.querySelector(".domino-room-table-info__timer");
   tableScore.innerHTML = `Очки: ${msg.points}`;
-}
+};

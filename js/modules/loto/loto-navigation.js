@@ -237,7 +237,7 @@ export async function NowClientTime() {
 
   // return timeHands - 180 * 60 * 1000;
   // return timeHands - 120 * 60 * 1000;
-  // return timeHands;
+  return timeHands;
 }
 
 // "year": "2023",

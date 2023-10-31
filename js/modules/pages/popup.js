@@ -834,7 +834,7 @@ export const openDominoWinGame = (winners, playersTiles) => {
       <div class="popup__body">
         <div class="popup__content domino-win-popup">
           <div class="popup__text domino-win-popup__text">
-            <p>Игра закрылась</p>
+            <p>Игра закончилась</p>
             <p>Победители:</p>
             ${winnersList}
           </div>
@@ -863,7 +863,7 @@ export const openDominoLoseGame = (winners, playersTiles) => {
       <div class="popup__body">
         <div class="popup__content domino-lose-popup">
           <div class="popup__text domino-lose-popup__text">
-            <p>Игра закрылась</p>
+            <p>Игра закончилась</p>
             <p>К сожалению, вы проиграли</p>
             <p>Победители:</p>
             ${winnersList}

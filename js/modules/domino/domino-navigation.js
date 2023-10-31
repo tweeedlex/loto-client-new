@@ -853,7 +853,17 @@ export const startTableTimer = async (msg) => {
 
   console.log(timerBlock);
 
-  if (timerBlock && timerBlock.innerHTML.includes("00:00")) {
+  if (
+    timerBlock &&
+    timerBlock.innerHTML.includes("00:00") &&
+    !currTimers.find(
+      (timer) =>
+        timer.roomid == msg.roomid &&
+        timer.tableid == msg.tableid &&
+        timer.playerMode == msg.playerMode &&
+        timer.gameMode == msg.gameMode
+    )
+  ) {
     let distance = 0;
 
     // создаем новый интервал

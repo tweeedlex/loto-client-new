@@ -204,38 +204,85 @@ export async function startLotoTimer(
   }
 }
 NowClientTime();
+// export async function NowClientTime() {
+//   const date = await axios.get(
+//     "https://api.api-ninjas.com/v1/worldtime?city=London",
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//         "X-Api-Key": "cf6gEL05KyA4C9H6muenzg==nhfnlZjleBd0LNYe",
+//       },
+//     }
+//   );
+
+//   // console.log(date.data.datetime);
+//   // const timeDate = new Date(date.data.datetime);
+//   // console.log(timeDate);
+//   // console.log(new Date());
+
+//   // let time = new Date(date.data.datetime).getTime();
+//   // console.log("time", time);
+//   let timeHands = createDateMillis(
+//     date.data.year,
+//     date.data.month,
+//     date.data.day,
+//     date.data.hour,
+//     date.data.minute,
+//     date.data.second
+//   );
+//   // console.log("timeHands", timeHands);
+
+//   // console.log("now time", new Date().getTime());
+//   // console.log("api time", time);
+
+//   // return timeHands - 180 * 60 * 1000;
+//   return timeHands - 120 * 60 * 1000;
+//   // return timeHands;
+// }
+
 export async function NowClientTime() {
-  const date = await axios.get(
-    "https://api.api-ninjas.com/v1/worldtime?city=London",
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": "4ZE5RU9AkYoQGk2408oxPA==OMgU32Wvms9parSt",
-      },
-    }
+  // const date = await axios.get(
+  //   "https://api.api-ninjas.com/v1/worldtime?city=London",
+  //   {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "X-Api-Key": "cf6gEL05KyA4C9H6muenzg==nhfnlZjleBd0LNYe",
+  //     },
+  //   }
+  // );
+  const date1 = await axios.get(
+    "http://worldtimeapi.org/api/timezone/Europe/London"
   );
 
-  // console.log(date.data.datetime);
-  // const timeDate = new Date(date.data.datetime);
-  // console.log(timeDate);
-  // console.log(new Date());
+  // 2023-10-31T18:29:07.218210+00:00
 
-  // let time = new Date(date.data.datetime).getTime();
-  // console.log("time", time);
+  // "year": "2023",
+  // "month": "09",
+  // "day": "09",
+  // "hour": "21",
+  // "minute": "52",
+  // "second": "24",
+
+  // parse string to object with year, month, day, hour, minute, second
+  let timeObj = {};
+  let timeStr = date1.data.datetime;
+  timeObj.year = +timeStr.slice(0, 4);
+  timeObj.month = +timeStr.slice(5, 7);
+  timeObj.day = +timeStr.slice(8, 10);
+  timeObj.hour = +timeStr.slice(11, 13);
+  timeObj.minute = +timeStr.slice(14, 16);
+  timeObj.second = +timeStr.slice(17, 19);
+
+  console.log(timeObj);
   let timeHands = createDateMillis(
-    date.data.year,
-    date.data.month,
-    date.data.day,
-    date.data.hour,
-    date.data.minute,
-    date.data.second
+    +timeObj.year,
+    +timeObj.month,
+    +timeObj.day,
+    +timeObj.hour,
+    +timeObj.minute,
+    +timeObj.second
   );
-  // console.log("timeHands", timeHands);
 
-  // console.log("now time", new Date().getTime());
-  // console.log("api time", time);
-
-  // return timeHands - 180 * 60 * 1000;
   // return timeHands - 120 * 60 * 1000;
   return timeHands;
 }

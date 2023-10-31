@@ -369,6 +369,14 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "startDominoGameTable":
+        localUser = JSON.parse(localStorage.getItem("user"));
+
+        if (msg.continued == false) {
+          console.log(localUser, msg.bet, "fsdfsdfds");
+          localUser.balance = localUser.balance - msg.bet;
+          localStorage.setItem("user", JSON.stringify(localUser));
+        }
+
         impAudio.playGameStarted();
         localStorage.removeItem("dominoGameScene");
         window.currentTurn = msg.turn;
@@ -453,8 +461,14 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "winDominoGame":
+        localUser = localStorage.getItem("user");
+        if (localUser) {
+          localUser = JSON.parse(localUser);
+        }
+
         impdominoGame.dropTableInfo();
-        authinterface.updateBalance(localUser.balance + msg.prize - msg.bet);
+        // authinterface.updateBalance(localUser.balance + msg.prize - msg.bet);
+        authinterface.updateBalance(localUser.balance + msg.prize);
         impPopup.openDominoWinGame(msg.winners, msg.playersTiles);
         if (dominoRoomLoader) {
           dominoRoomLoader.remove();
@@ -462,12 +476,16 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "endDominoGame":
+        localUser = localStorage.getItem("user");
+        if (localUser) {
+          localUser = JSON.parse(localUser);
+        }
         impdominoGame.dropTableInfo();
-        authinterface.updateBalance(localUser.balance - msg.lostAmount);
+        // authinterface.updateBalance(localUser.balance - msg.lostAmount);
         impPopup.openDominoLoseGame(msg.winners, msg.playersTiles);
-        const userData = JSON.parse(localStorage.getItem("user"));
-        userData.balance -= msg.lostAmount;
-        localStorage.setItem("user", JSON.stringify(userData));
+        // const userData = JSON.parse(localStorage.getItem("user"));
+        // userData.balance -= msg.lostAmount;
+        // localStorage.setItem("user", JSON.stringify(userData));
         if (dominoRoomLoader) {
           dominoRoomLoader.remove();
         }

@@ -54,12 +54,17 @@ export const setDominoTableInfo = (msg) => {
     ".domino-enemy-player__score"
   );
 
+  const userScore = document.querySelector(".domino-game-user__score");
+
   const gameMode =
     location.hash.split("/")[location.hash.split("/").length - 1];
   if (gameMode == "CLASSIC") {
     enemyScores.forEach((enemyScore) => {
       enemyScore.remove();
     });
+    if (userScore) {
+      userScore.remove();
+    }
   }
 
   drawUserInfo(playerData, user);
@@ -1781,7 +1786,7 @@ function parseGameScene(scene, gameMode) {
   if (gameMode && gameMode == "CLASSIC") {
     let parsedScene = [];
     scene.forEach((item) => {
-      if (item?.id) {
+      if (item.id >= 0) {
         parsedScene.push(item);
       }
     });
@@ -1799,7 +1804,9 @@ const drawUserInfo = (playerData, user) => {
   );
 
   usernameBlock.innerHTML = user.username;
-  userScoreBlock.innerHTML = playerData.score;
+  if (userScoreBlock) {
+    userScoreBlock.innerHTML = playerData.score;
+  }
 };
 
 export const tilesController = (roomId, tableId, playerMode, gameMode) => {
@@ -2254,7 +2261,6 @@ export const getMarketTile = (tile, msg) => {
     console.log(sceneLeft, sceneRight, left, right);
 
     if (
-      (sceneLeft == sceneRight && (sceneLeft == left || sceneLeft == right)) ||
       (left == sceneLeft && right == sceneRight) ||
       (left == sceneRight && right == sceneLeft)
     ) {
@@ -2606,12 +2612,12 @@ export const tilesState = (
           let leftTile = null;
           let rightTile = null;
           for (let i = 0; i < scene.length; i++) {
-            if ((scene[i]?.left || scene[i]?.right) && !leftTile) {
+            if (scene[i]?.id >= 0 && !leftTile) {
               leftTile = scene[i];
             }
           }
           for (let i = scene.length - 1; i >= 0; i--) {
-            if ((scene[i]?.left || scene[i]?.right) && !rightTile) {
+            if (scene[i]?.id >= 0 && !rightTile) {
               rightTile = scene[i];
             }
           }
@@ -3129,11 +3135,15 @@ export function reconnectFillTable(msg) {
   const enemyScores = tableBlock.querySelectorAll(
     ".domino-enemy-player__score"
   );
+  const userScore = document.querySelector(".domino-game-user__score");
 
   if (gameMode.toUpperCase() == "CLASSIC") {
     enemyScores.forEach((enemyScore) => {
       enemyScore.remove();
     });
+    if (userScore) {
+      userScore.remove();
+    }
   }
 
   setDominoTurn(turn, turnTime, players);
@@ -3177,6 +3187,7 @@ export const showSkippedEnemyTurn = (userId) => {
   let enemyBlock = document.querySelector(
     `.domino-game-table__enemy-player[userId="${userId}"]`
   );
+  showEnemyAutoTurnWindow(enemyBlock);
   if (enemyBlock) {
     enemyBlock.classList.add("skipped-turn");
 
@@ -3185,6 +3196,23 @@ export const showSkippedEnemyTurn = (userId) => {
     }, 2000);
   }
 };
+
+export function showEnemyAutoTurnWindow(enemyBlock) {
+  const existingAutoWindow = document.querySelector(".auto-window");
+  if (existingAutoWindow) {
+    existingAutoWindow.remove();
+  }
+
+  const autoWindow = document.createElement("div");
+  autoWindow.classList.add("auto-window-enemy");
+  autoWindow.innerHTML = "Ход пропущен!";
+
+  enemyBlock.appendChild(autoWindow);
+
+  setTimeout(() => {
+    autoWindow.remove();
+  }, 2000);
+}
 
 export function tablePlacement() {
   const table = document.querySelector(".domino-game-table__table");

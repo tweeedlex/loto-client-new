@@ -383,9 +383,9 @@
 }
 
 @media (max-width: 600px) {
-  .domino-game-page .domino-game-page__body {
-    /* width: 340px; */
-    /* height: 180px; */
+  .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
+    max-width: max-content;
+    padding: 8px 12px;
   }
 
   .domino-game-page .domino-game-page__body-wrapper {
@@ -757,7 +757,6 @@
     border-radius: 5px !important;
     padding: 5px !important;
   }
-
   .user-avatar__image,
   .user-avatar__image img {
     width: 50px;
@@ -1423,6 +1422,36 @@
   justify-content: center;
   z-index: 5;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.35);
+}
+
+.auto-window-enemy {
+  position: absolute;
+  text-align: center;
+  bottom: -30px;
+  background-color: #fff;
+  border: 3px solid #bbbbbb;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 600px) {
+  .auto-window-enemy {
+    bottom: -30px;
+    background-color: #fff;
+    border: 1.5px solid #bbbbbb;
+    padding: 5px;
+    font-size: 12px;
+  }
+
+  .domino-enemy-player-2 .auto-window-enemy {
+    transform: translate(20%, 0);
+  }
 }
 
 .phrase-popup__content .popup__close {

@@ -251,7 +251,7 @@ export async function NowClientTime() {
   //   }
   // );
   const date1 = await axios.get(
-    "http://worldtimeapi.org/api/timezone/Europe/London"
+    "https://worldtimeapi.org/api/timezone/Europe/London"
   );
 
   // 2023-10-31T18:29:07.218210+00:00

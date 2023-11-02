@@ -197,8 +197,8 @@ const drawTelephoneGameScene = (scene, player = null) => {
       block.tiles.forEach((tile) => {
         if (tile?.id >= 0) {
           insertingBlock.innerHTML += `
-          <div class="domino-game-table__tile ${
-            tile.rotate ? "rotated" : ""
+          <div class="domino-game-table__tile ${tile.rotate ? "rotated" : ""} ${
+            tile.central == true ? "central" : ""
           }" tileid="${+tile.id}">
             <div class="domino-game-table__tile-half domino-game-dots-${
               tile.left
@@ -1988,11 +1988,13 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
             });
 
             availableDoubles.forEach((doubleTile) => {
-              corners.push({
-                value: doubleTile.left,
-                side: "top",
-                id: doubleTile.id,
-              });
+              if (doubleTile.central == true) {
+                corners.push({
+                  value: doubleTile.left,
+                  side: "top",
+                  id: doubleTile.id,
+                });
+              }
             });
           }
         }
@@ -2667,24 +2669,8 @@ export const tilesState = (
           let centralScene = scene[Math.floor(scene.length / 2)];
           if (sceneTilesAmount == 0) {
             // find double tiles in user tiles
-            let doubleTiles = [];
-            userTiles.forEach((tile) => {
-              let left = +tile
-                .querySelector(".domino-tile__half:first-child")
-                .classList[1].split("-")[2];
-              let right = +tile
-                .querySelector(".domino-tile__half:last-child")
-                .classList[1].split("-")[2];
-              if (left == right) {
-                doubleTiles.push(tile);
-              }
-            });
 
-            // highlight all double tiles
-            doubleTiles.forEach((tile) => {
-              tile.classList.remove("disabled");
-              tile.classList.add("highlight");
-            });
+            let is32tile = false;
 
             if (firstTurn) {
               userTiles.forEach((tile) => {
@@ -2694,7 +2680,30 @@ export const tilesState = (
                 let right = +tile
                   .querySelector(".domino-tile__half:last-child")
                   .classList[1].split("-")[2];
+                if ((left == 3 && right == 2) || (right == 3 && left == 2)) {
+                  tile.classList.remove("disabled");
+                  tile.classList.add("highlight");
+                  is32tile = true;
+                }
+              });
+            }
 
+            if (!is32tile) {
+              let doubleTiles = [];
+              userTiles.forEach((tile) => {
+                let left = +tile
+                  .querySelector(".domino-tile__half:first-child")
+                  .classList[1].split("-")[2];
+                let right = +tile
+                  .querySelector(".domino-tile__half:last-child")
+                  .classList[1].split("-")[2];
+                if (left == right) {
+                  doubleTiles.push(tile);
+                }
+              });
+
+              // highlight all double tiles
+              doubleTiles.forEach((tile) => {
                 tile.classList.remove("disabled");
                 tile.classList.add("highlight");
               });
@@ -2745,12 +2754,24 @@ export const tilesState = (
               if (right == rightDots || left == rightDots) {
                 rightTiles.push(tile);
               }
-              doubleTiles.forEach((doubleTile) => {
-                if (left == doubleTile.left || right == doubleTile.right) {
-                  tile.classList.remove("disabled");
-                  tile.classList.add("highlight");
-                }
-              });
+            });
+
+            // tyt
+            doubleTiles.forEach((doubleTile) => {
+              if (doubleTile.central == true) {
+                userTiles.forEach((tile) => {
+                  let left = +tile
+                    .querySelector(".domino-tile__half:first-child")
+                    .classList[1].split("-")[2];
+                  let right = +tile
+                    .querySelector(".domino-tile__half:last-child")
+                    .classList[1].split("-")[2];
+                  if (left == doubleTile.left || right == doubleTile.left) {
+                    tile.classList.remove("disabled");
+                    tile.classList.add("highlight");
+                  }
+                });
+              }
             });
 
             // highlight all tiles with left and right dots
@@ -3178,6 +3199,24 @@ export function dropTableInfo() {
 
   // clear market
   updateMarketNum(0);
+
+  // remove all timers block
+
+  // enemy-domino__tiler
+  // user-avatar__countdown
+
+  let myTimer = document.querySelector(".user-avatar__countdown");
+  if (myTimer) {
+    myTimer.remove();
+  }
+
+  let enemyTimers = document.querySelectorAll(".enemy-domino__timer");
+
+  enemyTimers.forEach((timer) => {
+    if (timer) {
+      timer.remove();
+    }
+  });
 
   // clear turn
   window.currentTurn = null;

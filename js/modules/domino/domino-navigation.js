@@ -5,6 +5,8 @@ import * as impPopup from "../pages/popup.js";
 import * as impDominoGame from "./domino-game.js";
 import * as impHttp from "../http.js";
 
+let currTimers = [];
+
 const intervals = [
   // {
   //   dominoRoomId: 1,
@@ -403,7 +405,11 @@ export async function addDominoRoomsInfo(msg) {
     });
   });
 
+  console.log(dominoInfo);
+
   for (const room of dominoInfo) {
+    console.log(room);
+
     const dominoRoom = document.querySelector(
       `.domino-room[dominoRoomId="${room.dominoRoomId}"]`
     );
@@ -429,6 +435,18 @@ export async function addDominoRoomsInfo(msg) {
           );
           // чистим интервалы
 
+          let currtimersFound = currTimers.filter((interval) => {
+            return (
+              interval.roomid == room.dominoRoomId &&
+              interval.tableid == tableInfo.tableId &&
+              interval.playerMode == room.playerMode &&
+              interval.gameMode == room.gameMode
+            );
+          });
+          currtimersFound.forEach((interval) => {
+            clearInterval(interval.timer);
+          });
+
           intervals
             .filter(
               (interval) =>
@@ -442,13 +460,11 @@ export async function addDominoRoomsInfo(msg) {
 
           if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
             timerBlock.innerHTML = "Игра идет";
-            return;
           } else if (tableInfo.isStarted == true && gameMode == "TELEPHONE") {
             timerBlock.innerHTML = `Очки: ${tableInfo.points}`;
-            return;
           }
 
-          if (tableInfo.startedAt != null) {
+          if (tableInfo.startedAt != null && tableInfo.isStarted == false) {
             // запускаем таймер на стол
             let countDownDate = new Date(tableInfo.startedAt).getTime() + 10000;
 
@@ -465,7 +481,14 @@ export async function addDominoRoomsInfo(msg) {
               if (distance < 0) {
                 clearInterval(timer);
 
-                timerBlock.innerHTML = "Игра идет";
+                if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
+                  timerBlock.innerHTML = "Игра идет";
+                } else if (
+                  tableInfo.isStarted == true &&
+                  gameMode == "TELEPHONE"
+                ) {
+                  timerBlock.innerHTML = `Очки: ${tableInfo.points}`;
+                }
               }
             }, 500);
 
@@ -484,6 +507,7 @@ export async function addDominoRoomsInfo(msg) {
 }
 
 export async function createDominoTimer(msg) {
+  console.log(msg, "dfjkdsfklashjfkadshklasdhfkljhsda");
   // "startDominoTableTimerMenu"
   let startedAt = msg.startedAt;
   const tables = document.querySelectorAll(".domino-room-content__table");
@@ -500,6 +524,19 @@ export async function createDominoTimer(msg) {
 
       if (timerBlock) {
         // чистим интервалы
+        console.log(currTimers);
+        let currTimersFound = currTimers.filter((interval) => {
+          return (
+            interval.roomid == msg.dominoRoomId &&
+            interval.tableid == msg.tableId &&
+            interval.playerMode == msg.playerMode &&
+            interval.gameMode == msg.gameMode
+          );
+        });
+        console.log(currTimersFound, "currTimersFound");
+        currTimersFound.forEach((interval) => {
+          clearInterval(interval.timer);
+        });
 
         intervals
           .filter(
@@ -689,156 +726,6 @@ export function openDominoTable(
   });
 }
 
-// let currTimers = [
-//   { roomid: 1, tableid: 2, playerMode: 2, gameMode: "TELEPHONE", timer: 2 },
-//   { roomid: 4, tableid: 5, playerMode: 4, gameMode: "CLASSIC", timer: 5 },
-//   { roomid: 5, tableid: 2, playerMode: 4, gameMode: "TELEPHONE", timer: 3 },
-//   { roomid: 3, tableid: 1, playerMode: 2, gameMode: "CLASSIC", timer: 1 },
-// ];
-
-let currTimers = [];
-
-// export const setRoomsTimers = async (msg) => {
-//   // чистим таймеры когда комнат нету в меседже
-
-//   // если меседж пустой значит чистим все комнаты
-//   if (msg.dominoInfo.length == 0) {
-//     currTimers.forEach((timerItem) => {
-//       if (timerItem) {
-//         clearInterval(timerItem.timer);
-//         let timerBlock = null;
-//         if (timerItem.gameMode == "TELEPHONE") {
-//           timerBlock = document.querySelector(
-//             `.domino-room-players-${timerItem.playerMode}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-telephone .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
-//           );
-//         } else {
-//           timerBlock = document.querySelector(
-//             `.domino-room-players-${timerItem.playerModee}[dominoRoomId="${timerItem.roomid}"].domino-room-mode-classic .domino-room-content__table[tableId="${timerItem.tableid}"] .domino-room-table-info__timer`
-//           );
-//         }
-//         if (timerBlock) {
-//           timerBlock.innerHTML = `00:00`;
-//         }
-//       }
-//     });
-//   }
-
-//   // проверяем какие комнаты есть в currTimers и какие нам пришли, те которых нету в пришедших чистим с currTimers
-
-//   if (msg.dominoInfo.length != 0) {
-//     let exisitngTimersOnPage = [];
-//     for (const room of msg.dominoInfo) {
-//       for (const table of room.tables) {
-//         // Функция для поиска элементов по заданным условиям
-//         function findElements(array, conditions) {
-//           return array.filter((item) => {
-//             for (let key in conditions) {
-//               if (item[key] !== conditions[key]) {
-//                 return false;
-//               }
-//             }
-//             return true;
-//           });
-//         }
-
-//         // Условия поиска
-//         let searchConditions = {
-//           roomid: room.dominoRoomId,
-//           tableid: table.tableId,
-//           playerMode: room.playerMode,
-//           gameMode: room.gameMode,
-//         };
-
-//         // Поиск элементов
-//         let foundedEls = findElements(currTimers, searchConditions);
-//         foundedEls.forEach((el) => {
-//           exisitngTimersOnPage.push(el);
-//         });
-//       }
-//     }
-//     console.log(currTimers);
-//     console.log(exisitngTimersOnPage);
-//     currTimers = currTimers.filter((item) => {
-//       if (exisitngTimersOnPage.includes(item)) {
-//         clearInterval(item.timer);
-//         return false; // Вернуть false для удаления элемента из массива
-//       }
-//       return true; // Вернуть true для сохранения элемента в массиве
-//     });
-//     console.log(currTimers);
-//   }
-
-//   let nowClientTime = await impLotoNav.NowClientTime();
-
-//   // устанавливаем таймеры
-//   for (const room of msg.dominoInfo) {
-//     for (const table of room.tables) {
-//       let timerBlock = null;
-//       if (room.gameMode == "TELEPHONE") {
-//         timerBlock = document.querySelector(
-//           `.domino-room-players-${room.playerMode}[dominoRoomId="${room.dominoRoomId}"].domino-room-mode-telephone .domino-room-content__table[tableId="${table.tableId}"] .domino-room-table-info__timer`
-//         );
-//       } else {
-//         timerBlock = document.querySelector(
-//           `.domino-room-players-${room.playerMode}[dominoRoomId="${room.dominoRoomId}"].domino-room-mode-classic .domino-room-content__table[tableId="${table.tableId}"] .domino-room-table-info__timer`
-//         );
-//       }
-
-//       if (timerBlock) {
-//         console.log(table.startedWaitingAt);
-//         console.log(timerBlock);
-//         if (table.startedWaitingAt) {
-//           const targetTime = new Date(table.startedWaitingAt).getTime();
-
-//           let distance = nowClientTime - targetTime;
-
-//           // проверка если уже есть такой таймер то удаляем его
-
-//           let existedElements = [];
-//           currTimers.forEach((timer) => {
-//             if (
-//               timer.roomid === room.dominoRoomId &&
-//               timer.tableid === table.tableId &&
-//               timer.playerMode === room.playerMode &&
-//               timer.gameMode === room.gameMode
-//             ) {
-//               existedElements.push(timer);
-//             }
-//           });
-
-//           console.log("existedElements" + " ", existedElements);
-//           existedElements.forEach((item) => {
-//             clearInterval(item.timer);
-//           });
-
-//           // создаем новый интервал
-//           let timerTntervalNum = setInterval(async () => {
-//             distance += 200;
-
-//             const minutes = Math.floor(distance / (1000 * 60));
-//             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-//             // Add leading zeros for formatting
-//             const formattedMinutes = String(minutes).padStart(2, "0");
-//             const formattedSeconds = String(seconds).padStart(2, "0");
-//             if (timerBlock) {
-//               timerBlock.innerHTML = `${formattedMinutes}:${formattedSeconds}`;
-//             }
-//           }, 200);
-
-//           currTimers.push({
-//             roomid: room.dominoRoomId,
-//             tableid: table.tableId,
-//             playerMode: room.playerMode,
-//             gameMode: room.gameMode,
-//             timer: timerTntervalNum,
-//           });
-//         }
-//       }
-//     }
-//   }
-// };
-
 export const startTableTimer = async (msg) => {
   let timerBlock = null;
   if (msg.gameMode == "TELEPHONE") {
@@ -881,9 +768,12 @@ export const startTableTimer = async (msg) => {
       }
     }, 200);
 
+    console.log(msg);
+
+    // tyt
     currTimers.push({
-      roomid: msg.roomid,
-      tableid: msg.tableid,
+      roomid: msg.dominoRoomId,
+      tableid: msg.tableId,
       playerMode: msg.playerMode,
       gameMode: msg.gameMode,
       timer: timerTntervalNum,

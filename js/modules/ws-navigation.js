@@ -372,32 +372,43 @@ export const connectWebsocketFunctions = () => {
         localUser = JSON.parse(localStorage.getItem("user"));
 
         if (msg.continued == false) {
-          console.log(localUser, msg.bet, "fsdfsdfds");
-          localUser.balance = localUser.balance - msg.bet;
-          localStorage.setItem("user", JSON.stringify(localUser));
+          // console.log(localUser, msg.bet, "fsdfsdfds");
+          authinterface.updateBalance(localUser.balance - msg.bet);
+          // localUser.balance = localUser.balance - msg.bet;
+          // localStorage.setItem("user", JSON.stringify(localUser));
         }
 
         impAudio.playGameStarted();
         localStorage.removeItem("dominoGameScene");
         window.currentTurn = msg.turn;
+
         impdominoGame.dropTableInfo();
         console.log(msg.scene);
         localStorage.setItem("dominoGameScene", JSON.stringify(msg.scene));
-        impdominoGame.setDominoTableInfo(msg);
-        impdominoGame.setDominoTurn(msg.turn, msg.turnTime);
-        impdominoGame.tilesState(msg.turn, [], msg.continued, true);
-        impdominoGame.tilesController(
-          msg.dominoRoomId,
-          msg.tableId,
-          msg.playerMode,
-          msg.gameMode
-        );
-        let roomStartPreloader = document.querySelector(
-          ".domino-game-room__preloader"
-        );
-        if (roomStartPreloader) {
-          roomStartPreloader.remove();
+
+        try {
+          // рисуем инфу
+          impdominoGame.setDominoTableInfo(msg);
+          impdominoGame.setDominoTurn(msg.turn, msg.turnTime);
+          impdominoGame.tilesState(msg.turn, [], msg.continued, true);
+          impdominoGame.tilesController(
+            msg.dominoRoomId,
+            msg.tableId,
+            msg.playerMode,
+            msg.gameMode
+          );
+        } catch (e) {
+          console.error(e);
+        } finally {
+          // убираем прелоадер
+          let roomStartPreloader = document.querySelector(
+            ".domino-game-room__preloader"
+          );
+          if (roomStartPreloader) {
+            roomStartPreloader.remove();
+          }
         }
+
         break;
 
       case "newDominoTurn":
@@ -524,6 +535,10 @@ export const connectWebsocketFunctions = () => {
           if (dominoRoomLoader) {
             dominoRoomLoader.remove();
           }
+        } else {
+          console.error(
+            "Ошибка при получании времени хода! попробуйте перезагрузить страницу"
+          );
         }
 
         break;

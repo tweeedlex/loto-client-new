@@ -864,8 +864,8 @@ export const openDominoLoseGame = (winners, playersTiles) => {
         <div class="popup__content domino-lose-popup">
           <div class="popup__text domino-lose-popup__text">
             <p>Игра закончилась</p>
-            <p>К сожалению, вы проиграли</p>
-            <p>Победители:</p>
+            <p id="domino-lose-popup-lost">К сожалению, вы проиграли</p>
+            <p class="domino-lose-popup__winners">Победители:</p>
             ${winnersList}
             <div class="domino-lose-popup__tiles">
             </div>
@@ -876,14 +876,50 @@ export const openDominoLoseGame = (winners, playersTiles) => {
   `;
   main.appendChild(popupElement);
 
-  formPopupTiles(playersTiles, popupElement, true);
+  const gameMode =
+    location.hash.split("/")[location.hash.split("/").length - 1];
+
+  let showPoints = true;
+  // if game was finished because of no available turns
+  playersTiles.forEach((playerTiles) => {
+    if (playerTiles.tiles.length == 0) {
+      showPoints = false;
+    }
+  });
+
+  const winnersBlock = popupElement.querySelector(
+    ".domino-lose-popup__winners"
+  );
+
+  // insert before winners block new div
+  if (showPoints) {
+    const newDiv = document.createElement("div");
+    newDiv.innerHTML = "Вы проиграли потому что у вас больше очков.";
+    const lostText = document.querySelector("#domino-lose-popup-lost");
+    lostText.remove();
+    winnersBlock.parentNode.insertBefore(newDiv, winnersBlock);
+  }
+
+  formPopupTiles(
+    playersTiles,
+    popupElement,
+    gameMode == "CLASSIC",
+    false,
+    showPoints
+  );
 };
 
-const formPopupTiles = (playersTiles, popupElement, countPoints) => {
+const formPopupTiles = (
+  playersTiles,
+  popupElement,
+  isClassic,
+  wasRoundFinished = true,
+  showPoints = false
+) => {
   const tilesBlock = popupElement.querySelector(".domino-lose-popup__tiles");
   playersTiles.forEach((playerTiles) => {
     console.log("playerTiles", playerTiles);
-    if (countPoints) {
+    if (wasRoundFinished || showPoints) {
       playerTiles.points = 0;
       playerTiles.tiles.forEach((tile) => {
         playerTiles.points += tile.left + tile.right;
@@ -892,17 +928,12 @@ const formPopupTiles = (playersTiles, popupElement, countPoints) => {
     tilesBlock.innerHTML += `
       <div>
         <p style="width:100%;background-color:#000;height:2px;margin:10px 0;"></p>
-        Игрок ${playerTiles.username}. ${
-      playerTiles.points ? "Очки: " + playerTiles.points : ""
-    } 
+        Игрок ${playerTiles.username}. 
         ${
-          playerTiles.tiles.length == 1 &&
-          playerTiles.tiles[0].left == 0 &&
-          playerTiles.tiles[0].right == 0
-            ? "(Начислено 10 очков)"
+          (playerTiles.points && !isClassic) || showPoints
+            ? "Костяшки: " + playerTiles.points
             : ""
-        }
-        Костяшки:
+        } 
       </div>
       <div class="domino-lose-popup__player-tiles domino-lose-popup__player-tiles-${
         playerTiles.userId
@@ -987,11 +1018,23 @@ export const openDominoTelephoneRoundFinishPopup = (
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
 
+  const allScoreElements = document.querySelectorAll(".telephone-finish-score");
+
   let playersScoreList = "";
+  console.log(playersScore);
   playersScore.forEach((playerScore) => {
     playersScoreList += `
       <p userid="${playerScore.userId}">
-        <span class="telephone-finish-username">${playerScore.username}</span> - <span class="telephone-finish-score telephone-finish-user-${playerScore.userId}">${playerScore.score}</span>
+        <span class="telephone-finish-username">${playerScore.username}</span>: 
+        <span class="telephone-finish-score telephone-finish-user-${
+          playerScore.userId
+        }">
+          ${
+            winnerId == playerScore.userId
+              ? ` +${playerScore.score}`
+              : ` -${playerScore.score}`
+          }
+        </span>
       </p>
     `;
   });
@@ -1021,9 +1064,8 @@ export const openDominoTelephoneRoundFinishPopup = (
   );
 
   // impLotoNav.animateNumberChange(winnerScoreElement, prevWinnerScore, score, 3);
-  winnerScoreElement.innerHTML = score;
+  winnerScoreElement.innerHTML = `+${score}`;
 
-  const allScoreElements = document.querySelectorAll(".telephone-finish-score");
   let lostScoreElements = [];
   allScoreElements.forEach((scoreElement) => {
     if (!scoreElement.classList.contains(`telephone-finish-user-${winnerId}`)) {

@@ -238,20 +238,24 @@ export async function hashNavigation() {
     const tableId = +hash.split("/")[2];
     const playerMode = +hash.split("/")[3];
     const gameMode = hash.split("/")[4];
-    impDominoNav.openDominoTable(dominoRoomId, tableId, playerMode, gameMode);
-    ws.send(
-      JSON.stringify({
-        dominoRoomId,
-        tableId,
-        playerMode,
-        gameMode,
-        username: localUser.username,
-        userId: localUser.userId,
-        method: "connectDomino",
-      })
-    );
+    if (dominoRoomId && dominoRoomId && playerMode && gameMode) {
+      impDominoNav.openDominoTable(dominoRoomId, tableId, playerMode, gameMode);
+      ws.send(
+        JSON.stringify({
+          dominoRoomId,
+          tableId,
+          playerMode,
+          gameMode,
+          username: localUser.username,
+          userId: localUser.userId,
+          method: "connectDomino",
+        })
+      );
 
-    preloader.classList.add("d-none");
+      preloader.classList.add("d-none");
+    } else {
+      console.error("Ошибка при получании даных комнаты! попробуйте еще раз");
+    }
   }
 
   let navMenu = document.querySelector(".menu-footer");

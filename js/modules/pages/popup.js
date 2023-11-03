@@ -916,24 +916,30 @@ const formPopupTiles = (
   wasRoundFinished = true,
   showPoints = false
 ) => {
+  console.log(playersTiles);
   const tilesBlock = popupElement.querySelector(".domino-lose-popup__tiles");
   playersTiles.forEach((playerTiles) => {
     console.log("playerTiles", playerTiles);
-    if (wasRoundFinished || showPoints) {
-      playerTiles.points = 0;
-      playerTiles.tiles.forEach((tile) => {
-        playerTiles.points += tile.left + tile.right;
-      });
-    }
+    let playerTilesPoints = 0;
+    playerTiles.tiles.forEach((tile) => {
+      playerTilesPoints += tile.left + tile.right;
+    });
     tilesBlock.innerHTML += `
       <div>
         <p style="width:100%;background-color:#000;height:2px;margin:10px 0;"></p>
-        Игрок ${playerTiles.username}. 
-        ${
-          (playerTiles.points && !isClassic) || showPoints
-            ? "Костяшки: " + playerTiles.points
-            : ""
-        } 
+          <div style="display:flex;justify-content:space-between;">
+            <p>
+              Игрок ${playerTiles.username}.
+              ${
+                (playerTilesPoints && !isClassic) || showPoints
+                  ? "Костяшки: " + playerTilesPoints
+                  : ""
+              }
+            </p>
+            <p>
+              ${!isClassic && playerTiles.score ? `(${playerTiles.score})` : ""}
+            </p>
+          </div>
       </div>
       <div class="domino-lose-popup__player-tiles domino-lose-popup__player-tiles-${
         playerTiles.userId
@@ -1018,6 +1024,10 @@ export const openDominoTelephoneRoundFinishPopup = (
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
 
+  setTimeout(() => {
+    close(popupElement);
+  }, 5000);
+
   const allScoreElements = document.querySelectorAll(".telephone-finish-score");
 
   let playersScoreList = "";
@@ -1029,11 +1039,7 @@ export const openDominoTelephoneRoundFinishPopup = (
         <span class="telephone-finish-score telephone-finish-user-${
           playerScore.userId
         }">
-          ${
-            winnerId == playerScore.userId
-              ? ` +${playerScore.score}`
-              : ` -${playerScore.score}`
-          }
+          ${winnerId == playerScore.userId ? ` +${playerScore.score}` : `0`}
         </span>
       </p>
     `;
@@ -1077,10 +1083,6 @@ export const openDominoTelephoneRoundFinishPopup = (
     // impLotoNav.animateNumberChange(scoreElement, score, 0, 3);
     scoreElement.innerHTML = 0;
   });
-
-  setTimeout(() => {
-    close(popupElement);
-  }, 5000);
 };
 
 export const openEmojiPopup = () => {

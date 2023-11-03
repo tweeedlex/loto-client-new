@@ -126,6 +126,15 @@ const drawTelephoneGameScene = (scene, player = null) => {
   let { verticalTop, verticalBottom, verticalCoord } = getVertical(scene);
   // console.log(verticalTop, verticalBottom, verticalCoord);
 
+  if (
+    middleRow[Math.floor(middleRow.length / 2) + 4].left ==
+    middleRow[Math.floor(middleRow.length / 2) + 4].right
+  ) {
+    // move each element to the right in array
+    middleRow.unshift(null);
+    middleRow.pop();
+  }
+
   const tilesAmount = countTiles(scene);
 
   let blockTiles = [];
@@ -2002,7 +2011,10 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
         const sisterCorners = [];
 
         corners.forEach((corner) => {
-          if (corner.value == left || corner.value == right) {
+          if (
+            corner.value == left ||
+            (corner.value == right && corner !== left && corner !== right)
+          ) {
             sisterCorners.push(corner);
           }
         });
@@ -3246,7 +3258,9 @@ export function showEnemyAutoTurnWindow(enemyBlock) {
   autoWindow.classList.add("auto-window-enemy");
   autoWindow.innerHTML = "Ход пропущен!";
 
-  enemyBlock.appendChild(autoWindow);
+  if (enemyBlock) {
+    enemyBlock.appendChild(autoWindow);
+  }
 
   setTimeout(() => {
     autoWindow.remove();

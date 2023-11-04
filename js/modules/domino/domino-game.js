@@ -466,6 +466,9 @@ window.addEventListener("resize", edgeControl);
 function edgeControl() {
   const outerTableBlock = document.querySelector(".domino-game-table");
   const tableBlock = document.querySelector(".domino-game-table__table");
+  if (!outerTableBlock || !tableBlock) {
+    return;
+  }
   const tableLeft = outerTableBlock.getBoundingClientRect().left;
   const tableRight =
     window.innerWidth - (tableLeft + outerTableBlock.offsetWidth);

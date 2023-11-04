@@ -130,9 +130,14 @@ const drawTelephoneGameScene = (scene, player = null) => {
     middleRow[Math.floor(middleRow.length / 2) + 4].left ==
     middleRow[Math.floor(middleRow.length / 2) + 4].right
   ) {
+    // move each element to the left in array
+    // middleRow.unshift(null);
+    // middleRow.pop();
     // move each element to the right in array
-    middleRow.unshift(null);
-    middleRow.pop();
+    // scene.forEach((row) => {
+    //   row.push(null);
+    //   row.shift();
+    // });
   }
 
   const tilesAmount = countTiles(scene);
@@ -161,6 +166,25 @@ const drawTelephoneGameScene = (scene, player = null) => {
 
   // нижний ряд
   const block1tiles = middleRow.slice(0, Math.floor(middleRow.length / 2) - 8);
+
+  let expand = "";
+
+  // // если в 3 блоке последний тайл двойной, перекинуть в 4 блок
+  // if (
+  //   block3tiles[block3tiles.length - 1].left ==
+  //   block3tiles[block3tiles.length - 1].right
+  // ) {
+  //   block4tiles.unshift(block3tiles[block3tiles.length - 1]);
+  //   block3tiles.pop();
+  //   expand = "3-right";
+  // }
+
+  // // если в 3 блоке перв тайл двойной, перекинуть в 2 блок
+  // if (block3tiles[0].left == block3tiles[0].right) {
+  //   block2tiles.push(block3tiles[0]);
+  //   block3tiles.shift();
+  //   expand = "3-left";
+  // }
 
   // console.log(block3tiles);
   // console.log(block4tiles);
@@ -228,12 +252,18 @@ const drawTelephoneGameScene = (scene, player = null) => {
 
   tablePlacement();
   if (verticalCoord) {
-    placeVerticalTiles(scene, verticalTop, verticalBottom, verticalCoord);
+    placeVerticalTiles(
+      scene,
+      verticalTop,
+      verticalBottom,
+      verticalCoord,
+      expand
+    );
   }
   edgeControl();
 };
 
-function getVerticalOriginBlock(scene, verticalIndex) {
+function getVerticalOriginBlock(scene, verticalIndex, expand = "") {
   let middleRow = scene[Math.floor(scene.length / 2)];
 
   if (
@@ -292,9 +322,19 @@ function getVerticalOriginBlock(scene, verticalIndex) {
   return { block: null, left: false, right: false };
 }
 
-function placeVerticalTiles(scene, verticalTop, verticalBottom, verticalIndex) {
+function placeVerticalTiles(
+  scene,
+  verticalTop,
+  verticalBottom,
+  verticalIndex,
+  expand
+) {
   let middleRow = scene[Math.floor(scene.length / 2)];
-  const { block, left, right } = getVerticalOriginBlock(scene, verticalIndex);
+  const { block, left, right } = getVerticalOriginBlock(
+    scene,
+    verticalIndex,
+    expand
+  );
   const originTile = middleRow[verticalIndex];
 
   const originTileBlock = document.querySelector(

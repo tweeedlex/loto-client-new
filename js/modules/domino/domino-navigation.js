@@ -91,13 +91,18 @@ export function openDominoMenuPage(
 
   // get info about domino rooms
   setTimeout(() => {
-    window.ws.send(
-      JSON.stringify({
-        method: "getAllDominoInfo",
-        playerMode: isTwoPlayers ? 2 : 4,
-        gameMode: gameMode.toUpperCase(),
-      })
-    );
+    try {
+      window.ws.send(
+        JSON.stringify({
+          method: "getAllDominoInfo",
+          playerMode: isTwoPlayers ? 2 : 4,
+          gameMode: gameMode.toUpperCase(),
+        })
+      );
+    } catch {
+      impPopup.openErorPopup("Ошибка подключения");
+      setTimeout(() => window.reload(), 3000);
+    }
   }, 200);
 }
 
@@ -317,28 +322,45 @@ const addDominoListeners = () => {
       table.addEventListener("click", async () => {
         const dominoRoomId = +room.getAttribute("dominoRoomId");
         const tableId = +table.getAttribute("tableId");
+        console.log("table " + dominoRoomId + " " + tableId + " clicked");
         // playerMode: 2 or 4
         const playerMode = Number(room.classList[1].split("-")[3]);
-        const gameMode = room.classList[2].split("-")[3];
+        const gameMode = room.classList[2].split("-")[3].toUpperCase();
+
+        console.log(playerMode, gameMode);
 
         const user = JSON.parse(localStorage.getItem("user"));
         const betInfo = getDominoRoomBetInfo(dominoRoomId);
+
+        console.log(user.balance, betInfo.bet);
 
         if (user.balance < betInfo.bet) {
           impPopup.openErorPopup("Недостаточно средств на балансе", 300);
           return;
         }
-        let roomStatus = await impHttp.isDominoStarted(
-          dominoRoomId,
-          tableId,
-          playerMode,
-          gameMode.toUpperCase()
+
+        window.ws.send(
+          JSON.stringify({
+            method: "isDominoStarted",
+            dominoRoomId,
+            tableId,
+            playerMode,
+            gameMode,
+          })
         );
-        if (roomStatus.status == 200 && roomStatus.data.allow == true) {
-          window.location.hash = `domino-room-table/${dominoRoomId}/${tableId}/${playerMode}/${gameMode.toUpperCase()}`;
-        } else {
-          impPopup.openErorPopup("Подождите пока закончится игра!", 300);
-        }
+
+        // let roomStatus = await impHttp.isDominoStarted(
+        //   dominoRoomId,
+        //   tableId,
+        //   playerMode,
+        //   gameMode.toUpperCase()
+        // );
+
+        // if (roomStatus.status == 200 && roomStatus.data.allow == true) {
+        //   window.location.hash = `domino-room-table/${dominoRoomId}/${tableId}/${playerMode}/${gameMode.toUpperCase()}`;
+        // } else {
+        //   impPopup.openErorPopup("Подождите пока закончится игра!", 300);
+        // }
       });
     });
   });

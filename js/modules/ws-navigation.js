@@ -31,8 +31,8 @@ let activeFinishTimers = {
 
 export const connectWebsocketFunctions = () => {
   // const ws = new WebSocket(`wss://app.24loto.com/game`);
-  const ws = new WebSocket(`wss://loto-server-new.onrender.com/game`);
-  // const ws = new WebSocket(`ws://localhost:5001/game`);
+  // const ws = new WebSocket(`wss://loto-server-new.onrender.com/game`);
+  const ws = new WebSocket(`ws://localhost:5001/game`);
   // const ws = new WebSocket(`wss://lotogame.onrender.com/game`);
   window.ws = ws;
   let clientId = impLotoNav.createClientId();
@@ -345,6 +345,15 @@ export const connectWebsocketFunctions = () => {
 
       case "startDominoTableTimerTable":
         impPopup.openDominoTimerPopup();
+        break;
+
+      case "isDominoStarted":
+        if (msg.allow == true) {
+          const { dominoRoomId, tableId, gameMode, playerMode } = msg;
+          window.location.hash = `domino-room-table/${dominoRoomId}/${tableId}/${playerMode}/${gameMode.toUpperCase()}`;
+        } else {
+          impPopup.openErorPopup("Подождите пока закончится игра!", 300);
+        }
         break;
 
       case "waitingTableData":

@@ -200,7 +200,7 @@ export function createLoginForm() {
   let form = registrationPopup.querySelector(".registration-form");
   let formHeaderText = form.querySelector(".form-header__heading");
   formHeaderText.innerHTML = siteLanguage.authPage.login.title;
-
+  const preloader = document.querySelector(".preloader");
   let formBody = form.querySelector(".form-body");
 
   formBody.innerHTML = `<div class="form-body-login">
@@ -273,7 +273,9 @@ export function createLoginForm() {
         console.log(currentGames);
         switch (currentGames.currGame) {
           case "free":
-            preloader.classList.add("d-none");
+            if (preloader) {
+              preloader.classList.add("d-none");
+            }
             break;
           case "loto":
             if (currentGames.gameStarted) {

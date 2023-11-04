@@ -688,16 +688,21 @@ export const openDominoWaitingPopup = async (
 
   quitWainingButton.addEventListener("click", function () {
     let websocket = window.ws;
-    websocket.send(
-      JSON.stringify({
-        method: "leaveDominoTable",
-        dominoRoomId,
-        tableId,
-        playerMode,
-        gameMode,
-        userId: +JSON.parse(localStorage.getItem("user")).userId,
-      })
-    );
+    try {
+      websocket.send(
+        JSON.stringify({
+          method: "leaveDominoTable",
+          dominoRoomId,
+          tableId,
+          playerMode,
+          gameMode,
+          userId: +JSON.parse(localStorage.getItem("user")).userId,
+        })
+      );
+    } catch {
+      impPopup.openErorPopup("Ошибка подключения");
+      setTimeout(() => window.reload(), 3000);
+    }
     let localUser = localStorage.getItem("user");
     localUser = JSON.parse(localUser);
 
@@ -722,16 +727,21 @@ export const openDominoWaitingPopup = async (
 
   quitWaitingToGamesButton.addEventListener("click", function () {
     let websocket = window.ws;
-    websocket.send(
-      JSON.stringify({
-        method: "leaveDominoTable",
-        dominoRoomId,
-        tableId,
-        playerMode,
-        gameMode,
-        userId: +JSON.parse(localStorage.getItem("user")).userId,
-      })
-    );
+    try {
+      websocket.send(
+        JSON.stringify({
+          method: "leaveDominoTable",
+          dominoRoomId,
+          tableId,
+          playerMode,
+          gameMode,
+          userId: +JSON.parse(localStorage.getItem("user")).userId,
+        })
+      );
+    } catch {
+      impPopup.openErorPopup("Ошибка подключения");
+      setTimeout(() => window.reload(), 3000);
+    }
     let localUser = localStorage.getItem("user");
     localUser = JSON.parse(localUser);
 

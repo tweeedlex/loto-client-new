@@ -240,19 +240,23 @@ export async function hashNavigation() {
     const gameMode = hash.split("/")[4];
     if (dominoRoomId && dominoRoomId && playerMode && gameMode) {
       impDominoNav.openDominoTable(dominoRoomId, tableId, playerMode, gameMode);
-      ws.send(
-        JSON.stringify({
-          dominoRoomId,
-          tableId,
-          playerMode,
-          gameMode,
-          username: localUser.username,
-          userId: localUser.userId,
-          method: "connectDomino",
-        })
-      );
-
-      preloader.classList.add("d-none");
+      try {
+        ws.send(
+          JSON.stringify({
+            dominoRoomId,
+            tableId,
+            playerMode,
+            gameMode,
+            username: localUser.username,
+            userId: localUser.userId,
+            method: "connectDomino",
+          })
+        );
+        preloader.classList.add("d-none");
+      } catch {
+        impPopup.openErorPopup("Ошибка подключения");
+        setTimeout(() => window.reload(), 3000);
+      }
     } else {
       console.error("Ошибка при получании даных комнаты! попробуйте еще раз");
     }

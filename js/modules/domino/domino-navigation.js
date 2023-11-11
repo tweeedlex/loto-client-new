@@ -51,7 +51,7 @@ export function openDominoChoosePage() {
   <div
     class="domino-choose__button choose-mode__item mode-item classic"
   >
-    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.earnPoints}</div>
+    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.dominoClassic}</div>
 
     <div class="mode-item__image">
       <img src="./img/choose-mode-domino__classic.png" alt="" />
@@ -65,7 +65,7 @@ export function openDominoChoosePage() {
   <div
     class="domino-choose__button choose-mode__item mode-item telephone"
   >
-    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.dominoClassic}</div>
+    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.earnPoints}</div>
 
     <div class="mode-item__image">
       <img src="./img/choose-mode-domino__telephone.png" alt="" />
@@ -92,15 +92,20 @@ export function openDominoChoosePage() {
     
   >
   <div class="mode-item__locked">
-  <img src="./img/choose-mode-locked.png" alt="" />
-</div>
+    <img src="./img/choose-mode-locked.png" alt="" />
+  </div>
     <div class="mode-item__image">
-      <img src="./img/choose-mode-backgammons.png" alt="" />
+      <img src="./img/choose-mode-super-backgammons.png" alt="" />
     </div>
-    <div class="mode-item__button mode-dom-backgammons">${siteLanguage.chooseModeMenu.backgammon}</div>
+    <div class="mode-item__button mode-dom-backgammons">${siteLanguage.chooseModeMenu.backgammonSuper}</div>
   </div>
 </section>
   `;
+
+  const lockedBackgammon = document.querySelector(".mode-item__locked");
+  lockedBackgammon.addEventListener("click", () => {
+    impPopup.openErorPopup(siteLanguage.popups.comingSoon);
+  });
 
   let lotoButton = document.querySelector(".mode-item.loto");
   if (lotoButton) {
@@ -411,7 +416,7 @@ function formTwoPlayersMenu(main, main__container, ws, gameMode) {
   if (dominoRulesButtons) {
     dominoRulesButtons.forEach((dominoRulesButton) => {
       dominoRulesButton.addEventListener("click", function () {
-        impPopup.openRulesInfoPopup();
+        impPopup.openRulesInfoPopup(gameMode);
       });
     });
   }
@@ -522,7 +527,7 @@ function formFourPlayersMenu(main, main__container, ws, gameMode) {
   if (dominoRulesButtons) {
     dominoRulesButtons.forEach((dominoRulesButton) => {
       dominoRulesButton.addEventListener("click", function () {
-        impPopup.openRulesInfoPopup();
+        impPopup.openRulesInfoPopup(gameMode);
       });
     });
   }
@@ -928,7 +933,11 @@ export function openDominoTable(
   }
   const main__container = document.querySelector(".main__container");
   main__container.innerHTML = `
-  <section class="domino-game-page" id="domino-game-page">
+  <section class="domino-game-page ${
+    gameMode == "CLASSIC"
+      ? "domino-game-page-classic"
+      : "domino-game-page-telephone"
+  }" id="domino-game-page">
   <div class = "domino-game-room__preloader"><div class="lds-ring"><div></div><div></div><div></div><div></div></div></div>
   <div class="domino-games__container">
   <div class = "domino-game-page__settings"> <img src="img/settings-domino.png" alt="" /></div>
@@ -960,7 +969,9 @@ export function openDominoTable(
           </div>
           <div class="domino-table-store">
             <div class="domino-table-store__score">0</div>
-            <div class="domino-table-store__text">${siteLanguage.dominoTable.market}</div>
+            <div class="domino-table-store__text">${
+              siteLanguage.dominoTable.market
+            }</div>
           </div>
         </div>
       </div>
@@ -982,12 +993,16 @@ export function openDominoTable(
         
       </div>
       <div class="domino-game__buttons">
-        <button class="domino-game__button chat-button">
-          <img src="img/chat-icon.png" alt="" />
-        </button>
-        <button class="domino-game__button emoji-button">
-          <img src="img/smile-chat-icon.png" alt="" />
-        </button>
+        <div class="domino-game__button-wrapper">
+          <button class="domino-game__button chat-button">
+            <img src="img/chat-icon.png" alt="" />
+          </button>
+        </div>
+        <div class="domino-game__button-wrapper">
+          <button class="domino-game__button emoji-button">
+            <img src="img/smile-chat-icon.png" alt="" />
+          </button>
+        </div>
       </div>
     </div>
   </div>

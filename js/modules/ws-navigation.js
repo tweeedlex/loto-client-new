@@ -516,9 +516,11 @@ export const connectWebsocketFunctions = () => {
         break;
 
       case "endAndCloseDominoGame":
+        const gameMode = msg.gameMode;
         let disconnectDomninoMsg = {
           reason: "createNewWs",
-          page: "mainDominoPage",
+          page:
+            gameMode == "CLASSIC" ? "dominoClassicPage" : "dominoTelephonePage",
         };
 
         let popups = document.querySelectorAll(".popup");

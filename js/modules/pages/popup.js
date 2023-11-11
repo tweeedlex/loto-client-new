@@ -1167,8 +1167,20 @@ export const openEmojiPopup = () => {
 
   emojiPopupContent.appendChild(closeButton);
 
+  let chatButtons = document.querySelectorAll(".domino-game__button-wrapper");
+
   if (window.isChatBlocked) {
-    emojiPopupContent.classList.add("blocked");
+    chatButtons.forEach((item) => {
+      if (item) {
+        let chatBlocked = item.querySelector(".chat-blocked");
+        if (!chatBlocked) {
+          let lockBlock = document.createElement("div");
+          lockBlock.innerHTML = `<img src="img/choose-mode-locked.png" alt="lock">`;
+          lockBlock.classList.add("chat-blocked");
+          item.appendChild(lockBlock);
+        }
+      }
+    });
   }
 
   for (let i = 1; i <= 24; i++) {
@@ -1194,22 +1206,28 @@ export const openEmojiPopup = () => {
       );
       close(popupElement);
 
+      chatButtons.forEach((item) => {
+        if (item) {
+          let chatBlocked = item.querySelector(".chat-blocked");
+          if (!chatBlocked) {
+            let lockBlock = document.createElement("div");
+            lockBlock.innerHTML = `<img src="img/choose-mode-locked.png" alt="lock">`;
+            lockBlock.classList.add("chat-blocked");
+            item.appendChild(lockBlock);
+          }
+        }
+      });
+
       window.isChatBlocked = true;
       setTimeout(() => {
-        const openedPhrasePopup = document.querySelector(
-          ".phrase-popup__content"
-        );
-        const openedEmojiPopup = document.querySelector(
-          ".emoji-popup__content"
-        );
-        if (openedPhrasePopup) {
-          openedPhrasePopup.classList.remove("blocked");
-        }
-        if (openedEmojiPopup) {
-          openedEmojiPopup.classList.remove("blocked");
-        }
+        chatButtons.forEach((item) => {
+          let chatBlocked = item.querySelector(".chat-blocked");
+          if (chatBlocked) {
+            chatBlocked.remove();
+          }
+        });
         window.isChatBlocked = false;
-      }, 10000);
+      }, 5000);
     });
 
     emojiPopupContent.appendChild(emojiItem);
@@ -1243,10 +1261,24 @@ export const openTextPopup = () => {
     ".phrase-popup__content"
   );
 
+  let chatButtons = document.querySelectorAll(".domino-game__button-wrapper");
+
   phrasePopupContent.appendChild(closeButton);
 
   if (window.isChatBlocked) {
-    phrasePopupContent.classList.add("blocked");
+    chatButtons.forEach((item) => {
+      chatButtons.forEach((item) => {
+        if (item) {
+          let chatBlocked = item.querySelector(".chat-blocked");
+          if (!chatBlocked) {
+            let lockBlock = document.createElement("div");
+            lockBlock.innerHTML = `<img src="img/choose-mode-locked.png" alt="lock">`;
+            lockBlock.classList.add("chat-blocked");
+            item.appendChild(lockBlock);
+          }
+        }
+      });
+    });
   }
 
   for (let i = 1; i <= 24; i++) {
@@ -1274,23 +1306,29 @@ export const openTextPopup = () => {
 
       close(popupElement);
 
+      chatButtons.forEach((item) => {
+        if (item) {
+          let chatBlocked = item.querySelector(".chat-blocked");
+          if (!chatBlocked) {
+            let lockBlock = document.createElement("div");
+            lockBlock.innerHTML = `<img src="img/choose-mode-locked.png" alt="lock">`;
+            lockBlock.classList.add("chat-blocked");
+            item.appendChild(lockBlock);
+          }
+        }
+      });
+
       // block phrases and emojis for 10 seconds
       window.isChatBlocked = true;
       setTimeout(() => {
-        const openedPhrasePopup = document.querySelector(
-          ".phrase-popup__content"
-        );
-        const openedEmojiPopup = document.querySelector(
-          ".emoji-popup__content"
-        );
-        if (openedPhrasePopup) {
-          openedPhrasePopup.classList.remove("blocked");
-        }
-        if (openedEmojiPopup) {
-          openedEmojiPopup.classList.remove("blocked");
-        }
+        chatButtons.forEach((item) => {
+          let chatBlocked = item.querySelector(".chat-blocked");
+          if (chatBlocked) {
+            chatBlocked.remove();
+          }
+        });
         window.isChatBlocked = false;
-      }, 10000);
+      }, 5000);
     });
 
     phrasePopupContent.appendChild(phraseItem);
@@ -1304,33 +1342,31 @@ export const openSettingsPopup = () => {
   }
   const body = document.querySelector("body");
   let popupElement = document.createElement("div");
-  popupElement.classList.add("popup", "jackpot-popup");
+  popupElement.classList.add("popup", "domino-settings-popup");
   popupElement.innerHTML = `
-    <div class="popup domino-settings-popup">
-      <div class="popup__body domino-settings-popup__body">
-        <div class="popup__content domino-settings-popup__content">
-          <div class="domino-settings-option domino-settings__sound">
-            <a class="profile__button domino-settings-option-item">
-              <img src="img/profile icons/sound.png" alt="ЗВУК" />
-              <p>${siteLanguage.profilePage.mainButtons.soundsBtnText}</p>
-              <div class="profile__button-switcher curpointer">
-                <button class="profile__button-switcher-on active">
-                  ON
-                </button>
-                <button class="profile__button-switcher-off">OFF</button>
-                </div>
-                </a>
-                </div>
-                <div class="domino-settings-option domino-settings__rooles">
-                <a class="profile__button domino-settings-option-item">
-                <img src="./img/question-tag.png" alt="" />
-                <p>${siteLanguage.popups.rules}</p>
-                </a>
-          </div>
+    <div class="popup__body domino-settings-popup__body">
+      <div class="popup__content domino-settings-popup__content">
+        <div class="domino-settings-option domino-settings__sound">
+          <a class="profile__button domino-settings-option-item">
+            <img src="img/profile icons/sound.png" alt="ЗВУК" />
+            <p>${siteLanguage.profilePage.mainButtons.soundsBtnText}</p>
+            <div class="profile__button-switcher curpointer">
+              <button class="profile__button-switcher-on active">
+                ON
+              </button>
+              <button class="profile__button-switcher-off">OFF</button>
+              </div>
+              </a>
+              </div>
+              <div class="domino-settings-option domino-settings__rooles">
+              <a class="profile__button domino-settings-option-item">
+              <img src="./img/question-tag.png" alt="" />
+              <p>${siteLanguage.popups.rules}</p>
+              </a>
+        </div>
 
-          <div class="domino-settings__button">${siteLanguage.popups.gotIt}</div>
-          </div>
-      </div>
+        <div class="domino-settings__button">${siteLanguage.popups.gotIt}</div>
+        </div>
     </div>
   `;
 
@@ -1372,9 +1408,13 @@ export const openSettingsPopup = () => {
     toggleSound();
   });
 
+  const gameMode = location.hash
+    .split("/")
+    [location.hash.split("/").length - 1].toUpperCase();
+
   const rulesButton = document.querySelector(".domino-settings__rooles");
   rulesButton.addEventListener("click", () => {
-    openRulesInfoPopup();
+    openRulesInfoPopup(gameMode);
   });
 
   let gotItBtn = popupElement.querySelector(".domino-settings__button");
@@ -1383,7 +1423,7 @@ export const openSettingsPopup = () => {
   });
 };
 
-export function openRulesInfoPopup() {
+export function openRulesInfoPopup(gameMode = "CLASSIC") {
   let siteLanguage = window.siteLanguage;
   if (isPopupOpened()) {
     const popups = document.querySelectorAll(".popup");
@@ -1393,17 +1433,26 @@ export function openRulesInfoPopup() {
       });
     }
   }
+
+  console.log(`dominoRules${gameMode}`);
+
   const body = document.querySelector("body");
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup", "jackpot-popup", "domino-rules-popup");
   popupElement.innerHTML = `
   <div class="popup__body jackpot-info-popup">
     <div class="popup__content">
-    <h2>${siteLanguage.popups.rules}</h2>
+    <h2>${
+      gameMode == "CLASSIC"
+        ? siteLanguage.popups.rulesClassic
+        : siteLanguage.popups.rulesTelephone
+    }</h2>
       <div class="popup__text">
-        ${siteLanguage.popups.dominoRules}
+        ${siteLanguage.popups[`dominoRules${gameMode}`]}
       </div>
-      <div class="popup-button__gotit"> ${siteLanguage.profilePage.myGamesPage.statsItem.understandText}</div>
+      <div class="popup-button__gotit"> ${
+        siteLanguage.profilePage.myGamesPage.statsItem.understandText
+      }</div>
     </div>
   </div>
   `;

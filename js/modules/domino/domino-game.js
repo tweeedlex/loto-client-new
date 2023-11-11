@@ -239,6 +239,33 @@ const drawTelephoneGameScene = (scene, player = null) => {
     }
   }
 
+  // если в 4 блоке перв тайл двойной, перекинуть тайл из 3 блока в 4
+  if (
+    block4tiles[0].left == block4tiles[0].right &&
+    block4tiles[0].id >= 0 &&
+    !isBlock3Vertical
+  ) {
+    if (block4tiles[0].central == true) {
+      expand = { fromBlock: 4, toBlock: 3, left: false, right: true };
+    }
+    block3tiles.push(block4tiles[0]);
+    block4tiles.shift();
+  }
+
+  // если в 2 блоке последний тайл двойной, перекинуть тайл из 3 блока в 2
+  if (
+    block2tiles[block2tiles.length - 1].left ==
+      block2tiles[block2tiles.length - 1].right &&
+    block2tiles[block2tiles.length - 1].id >= 0 &&
+    !isBlock3Vertical
+  ) {
+    if (block2tiles[block2tiles.length - 1].central == true) {
+      expand = { fromBlock: 2, toBlock: 3, left: true, right: false };
+    }
+    block3tiles.unshift(block2tiles[block2tiles.length - 1]);
+    block2tiles.pop();
+  }
+
   // если в 2 блоке перв тайл двойной, перекинуть 2 тайла в 1 блок
   if (
     block2tiles[0].left == block2tiles[0].right &&
@@ -3364,10 +3391,12 @@ export function dropTableInfo() {
   // enemy-domino__tiler
   // user-avatar__countdown
 
-  let myTimer = document.querySelector(".user-avatar__countdown");
-  if (myTimer) {
-    myTimer.remove();
-  }
+  let myTimers = document.querySelectorAll(".user-avatar__countdown");
+  myTimers.forEach((myTimer) => {
+    if (myTimer) {
+      myTimer.remove();
+    }
+  });
 
   let enemyTimers = document.querySelectorAll(".enemy-domino__timer");
 
@@ -3657,6 +3686,7 @@ export function showPhrase(msg) {
 }
 
 export const updatePlayerScore = (userId, score, addedScore) => {
+  const siteLanguage = window.siteLanguage;
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (score == 0 || addedScore == 0) {
@@ -3676,11 +3706,11 @@ export const updatePlayerScore = (userId, score, addedScore) => {
     if (table) {
       const scoreNumber = document.createElement("div");
       scoreNumber.classList.add("score-number");
-      scoreNumber.innerHTML = `+ ${addedScore}`;
+      scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       table.appendChild(scoreNumber);
       setTimeout(() => {
         scoreNumber.remove();
-      }, 800);
+      }, 1800);
     }
   } else {
     // domino-game-table__enemy-player domino-enemy-player domino-enemy-player-3
@@ -3697,11 +3727,11 @@ export const updatePlayerScore = (userId, score, addedScore) => {
     if (enemyBlock) {
       const scoreNumber = document.createElement("div");
       scoreNumber.classList.add("enemy-score-number");
-      scoreNumber.innerHTML = `+ ${addedScore}`;
+      scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       enemyBlock.appendChild(scoreNumber);
       setTimeout(() => {
         scoreNumber.remove();
-      }, 800);
+      }, 1800);
     }
   }
 };

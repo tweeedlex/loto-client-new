@@ -204,41 +204,6 @@ export async function startLotoTimer(
   }
 }
 NowClientTime();
-// export async function NowClientTime() {
-//   const date = await axios.get(
-//     "https://api.api-ninjas.com/v1/worldtime?city=London",
-//     {
-//       headers: {
-//         "Content-Type": "application/json",
-//         "X-Api-Key": "cf6gEL05KyA4C9H6muenzg==nhfnlZjleBd0LNYe",
-//       },
-//     }
-//   );
-
-//   // console.log(date.data.datetime);
-//   // const timeDate = new Date(date.data.datetime);
-//   // console.log(timeDate);
-//   // console.log(new Date());
-
-//   // let time = new Date(date.data.datetime).getTime();
-//   // console.log("time", time);
-//   let timeHands = createDateMillis(
-//     date.data.year,
-//     date.data.month,
-//     date.data.day,
-//     date.data.hour,
-//     date.data.minute,
-//     date.data.second
-//   );
-//   // console.log("timeHands", timeHands);
-
-//   // console.log("now time", new Date().getTime());
-//   // console.log("api time", time);
-
-//   // return timeHands - 180 * 60 * 1000;
-//   return timeHands - 120 * 60 * 1000;
-//   // return timeHands;
-// }
 
 export async function NowClientTime() {
   // const date = await axios.get(

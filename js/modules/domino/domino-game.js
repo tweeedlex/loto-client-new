@@ -167,24 +167,93 @@ const drawTelephoneGameScene = (scene, player = null) => {
   // нижний ряд
   const block1tiles = middleRow.slice(0, Math.floor(middleRow.length / 2) - 8);
 
-  let expand = "";
+  let expand = null;
 
-  // // если в 3 блоке последний тайл двойной, перекинуть в 4 блок
-  // if (
-  //   block3tiles[block3tiles.length - 1].left ==
-  //   block3tiles[block3tiles.length - 1].right
-  // ) {
-  //   block4tiles.unshift(block3tiles[block3tiles.length - 1]);
-  //   block3tiles.pop();
-  //   expand = "3-right";
-  // }
+  // если в 3 блоке последний тайл двойной, перекинуть 2 тайла в 4 блок
+  if (
+    block3tiles[block3tiles.length - 1].left ==
+      block3tiles[block3tiles.length - 1].right &&
+    block3tiles[block3tiles.length - 1].id >= 0
+  ) {
+    if (block3tiles[block3tiles.length - 1].central == true) {
+      expand = { fromBlock: 3, toBlock: 4, left: true, right: false };
+    }
+    for (let i = 0; i < 2; i++) {
+      block4tiles.unshift(block3tiles[block3tiles.length - 1]);
+      block3tiles.pop();
+    }
+  }
 
-  // // если в 3 блоке перв тайл двойной, перекинуть в 2 блок
-  // if (block3tiles[0].left == block3tiles[0].right) {
-  //   block2tiles.push(block3tiles[0]);
-  //   block3tiles.shift();
-  //   expand = "3-left";
-  // }
+  // если в 3 блоке перв тайл двойной, перекинуть 2 тайла в 2 блок
+  if (block3tiles[0].left == block3tiles[0].right && block3tiles[0].id >= 0) {
+    if (block3tiles[0].central == true) {
+      expand = { fromBlock: 3, toBlock: 2, left: false, right: true };
+    }
+    for (let i = 0; i < 2; i++) {
+      block2tiles.push(block3tiles[0]);
+      block3tiles.shift();
+    }
+  }
+
+  let isBlock3Vertical = false;
+  // check if there is a vertical that is made from block 3
+  // take 1 row before middle in the scene and one after and if there is a tile and it is in range of middleTile - 4 to middleTile + 4, then vertical is made from block3
+  const prevRow = scene[Math.floor(scene.length / 2) - 1];
+  const nextRow = scene[Math.floor(scene.length / 2) + 1];
+
+  prevRow.forEach((tile) => {
+    if (
+      tile?.id >= 0 &&
+      prevRow.indexOf(tile) >= Math.floor(prevRow.length / 2) - 4 &&
+      prevRow.indexOf(tile) <= Math.floor(prevRow.length / 2) + 4
+    ) {
+      isBlock3Vertical = true;
+    }
+  });
+
+  nextRow.forEach((tile) => {
+    if (
+      tile?.id >= 0 &&
+      nextRow.indexOf(tile) >= Math.floor(nextRow.length / 2) - 4 &&
+      nextRow.indexOf(tile) <= Math.floor(nextRow.length / 2) + 4
+    ) {
+      isBlock3Vertical = true;
+    }
+  });
+
+  // если в 4 блоке последний тайл двойной, перекинуть 2 тайла в 5 блок
+  if (
+    block4tiles[block4tiles.length - 1].left ==
+      block4tiles[block4tiles.length - 1].right &&
+    block4tiles[block4tiles.length - 1].id >= 0 &&
+    block4tiles.length > 1 &&
+    !isBlock3Vertical
+  ) {
+    if (block4tiles[block4tiles.length - 1].central == true) {
+      expand = { fromBlock: 4, toBlock: 5, left: true, right: false };
+    }
+
+    for (let i = 0; i < 2; i++) {
+      block5tiles.unshift(block4tiles[block4tiles.length - 1]);
+      block4tiles.pop();
+    }
+  }
+
+  // если в 2 блоке перв тайл двойной, перекинуть 2 тайла в 1 блок
+  if (
+    block2tiles[0].left == block2tiles[0].right &&
+    block2tiles[0].id >= 0 &&
+    block2tiles.length > 1 &&
+    !isBlock3Vertical
+  ) {
+    if (block2tiles[0].central == true) {
+      expand = { fromBlock: 2, toBlock: 1, left: false, right: true };
+    }
+    for (let i = 0; i < 2; i++) {
+      block1tiles.push(block2tiles[0]);
+      block2tiles.shift();
+    }
+  }
 
   // console.log(block3tiles);
   // console.log(block4tiles);
@@ -263,63 +332,71 @@ const drawTelephoneGameScene = (scene, player = null) => {
   edgeControl();
 };
 
-function getVerticalOriginBlock(scene, verticalIndex, expand = "") {
+function getVerticalOriginBlock(scene, verticalIndex, expand = null) {
   let middleRow = scene[Math.floor(scene.length / 2)];
+  let offsetRight = 0;
+  let offsetLeft = 0;
+  console.log(expand);
+  if (expand != null) {
+    const { toBlock, left, right } = expand;
+    return { block: toBlock, left: left, right: right };
+  } else {
+    if (
+      verticalIndex >= Math.floor(middleRow.length / 2) - 4 + offsetLeft &&
+      verticalIndex < Math.floor(middleRow.length / 2) + 4 + offsetRight
+    ) {
+      if (verticalIndex == Math.floor(middleRow.length / 2) - 4 + offsetLeft) {
+        return { block: 3, left: true, right: false };
+      }
+      if (verticalIndex == Math.floor(middleRow.length / 2) + 3 + offsetRight) {
+        return { block: 3, left: false, right: true };
+      }
 
-  if (
-    verticalIndex >= Math.floor(middleRow.length / 2) - 4 &&
-    verticalIndex < Math.floor(middleRow.length / 2) + 4
-  ) {
-    if (verticalIndex == Math.floor(middleRow.length / 2) - 4) {
-      return { block: 3, left: true, right: false };
+      return { block: 3, left: false, right: false };
     }
-    if (verticalIndex == Math.floor(middleRow.length / 2) + 3) {
-      return { block: 3, left: false, right: true };
-    }
-    return { block: 3, left: false, right: false };
-  }
 
-  if (
-    verticalIndex >= Math.floor(middleRow.length / 2) + 4 &&
-    verticalIndex < Math.floor(middleRow.length / 2) + 8
-  ) {
-    if (verticalIndex == Math.floor(middleRow.length / 2) + 4) {
-      return { block: 4, left: true, right: false };
+    if (
+      verticalIndex >= Math.floor(middleRow.length / 2) + 4 + offsetLeft &&
+      verticalIndex < Math.floor(middleRow.length / 2) + 8 + offsetRight
+    ) {
+      if (verticalIndex == Math.floor(middleRow.length / 2) + 4 + offsetLeft) {
+        return { block: 4, left: true, right: false };
+      }
+      if (verticalIndex == Math.floor(middleRow.length / 2) + 7 + offsetRight) {
+        return { block: 4, left: false, right: true };
+      }
+      return { block: 4, left: false, right: false };
     }
-    if (verticalIndex == Math.floor(middleRow.length / 2) + 7) {
-      return { block: 4, left: false, right: true };
-    }
-    return { block: 4, left: false, right: false };
-  }
 
-  if (verticalIndex >= Math.floor(middleRow.length / 2) + 8) {
-    if (verticalIndex == Math.floor(middleRow.length / 2) + 8) {
-      return { block: 5, left: false, right: true };
+    if (verticalIndex >= Math.floor(middleRow.length / 2) + 8 + offsetRight) {
+      if (verticalIndex == Math.floor(middleRow.length / 2) + 8 + offsetRight) {
+        return { block: 5, left: false, right: true };
+      }
+      return { block: 5, left: false, right: false };
     }
-    return { block: 5, left: false, right: false };
-  }
 
-  if (
-    verticalIndex >= Math.floor(middleRow.length / 2) - 8 &&
-    verticalIndex < Math.floor(middleRow.length / 2) - 4
-  ) {
-    if (verticalIndex == Math.floor(middleRow.length / 2) - 8) {
-      return { block: 2, left: true, right: false };
+    if (
+      verticalIndex >= Math.floor(middleRow.length / 2) - 8 + offsetLeft &&
+      verticalIndex < Math.floor(middleRow.length / 2) - 4 + offsetRight
+    ) {
+      if (verticalIndex == Math.floor(middleRow.length / 2) - 8 + offsetLeft) {
+        return { block: 2, left: true, right: false };
+      }
+      // console.log(verticalIndex);
+      if (verticalIndex == Math.floor(middleRow.length / 2) - 5 + offsetRight) {
+        return { block: 2, left: false, right: true };
+      }
+      return { block: 2, left: false, right: false };
     }
-    // console.log(verticalIndex);
-    if (verticalIndex == Math.floor(middleRow.length / 2) - 5) {
-      return { block: 2, left: false, right: true };
-    }
-    return { block: 2, left: false, right: false };
-  }
 
-  if (verticalIndex < Math.floor(middleRow.length / 2) - 8) {
-    if (verticalIndex == Math.floor(middleRow.length / 2) - 9) {
-      return { block: 1, left: true, right: false };
+    if (verticalIndex < Math.floor(middleRow.length / 2) - 8 + offsetLeft) {
+      if (verticalIndex == Math.floor(middleRow.length / 2) - 9 + offsetLeft) {
+        return { block: 1, left: true, right: false };
+      }
+      return { block: 1, left: false, right: false };
     }
-    return { block: 1, left: false, right: false };
+    return { block: null, left: false, right: false };
   }
-  return { block: null, left: false, right: false };
 }
 
 function placeVerticalTiles(
@@ -329,126 +406,133 @@ function placeVerticalTiles(
   verticalIndex,
   expand
 ) {
-  let middleRow = scene[Math.floor(scene.length / 2)];
-  const { block, left, right } = getVerticalOriginBlock(
-    scene,
-    verticalIndex,
-    expand
-  );
-  const originTile = middleRow[verticalIndex];
+  // window.removeEventListener("resize", placeVerticalTilesBlocks);
+  // window.addEventListener("resize", placeVerticalTilesBlocks);
 
-  const originTileBlock = document.querySelector(
-    `.domino-game-table__tile[tileid="${originTile.id}"]`
-  );
+  placeVerticalTilesBlocks();
+  function placeVerticalTilesBlocks() {
+    let middleRow = scene[Math.floor(scene.length / 2)];
+    const { block, left, right } = getVerticalOriginBlock(
+      scene,
+      verticalIndex,
+      expand
+    );
+    console.log(block, left, right);
+    const originTile = middleRow[verticalIndex];
 
-  const parentBlock = document.querySelector(
-    `.domino-game-table__table-tiles-block-${block}`
-  );
+    const originTileBlock = document.querySelector(
+      `.domino-game-table__tile[tileid="${originTile.id}"]`
+    );
 
-  let parentBlockLeft = +parentBlock.style.left.split("px")[0];
+    const parentBlock = document.querySelector(
+      `.domino-game-table__table-tiles-block-${block}`
+    );
 
-  const allTilesInBlock = parentBlock.querySelectorAll(
-    ".domino-game-table__tile"
-  );
+    let parentBlockLeft = +parentBlock.style.left.split("px")[0];
 
-  const leftTileBlocks = [];
-  allTilesInBlock.forEach((tile) => {
-    if (
-      middleRow.indexOf(
-        middleRow.find(
-          (middleTile) => middleTile.id == +tile.getAttribute("tileid")
-        )
-      ) < verticalIndex
-    ) {
-      leftTileBlocks.push(tile);
+    const allTilesInBlock = parentBlock.querySelectorAll(
+      ".domino-game-table__tile"
+    );
+
+    const leftTileBlocks = [];
+    allTilesInBlock.forEach((tile) => {
+      if (
+        middleRow.indexOf(
+          middleRow.find(
+            (middleTile) => middleTile.id == +tile.getAttribute("tileid")
+          )
+        ) < verticalIndex
+      ) {
+        leftTileBlocks.push(tile);
+      }
+    });
+
+    let leftPadding = 0;
+
+    leftTileBlocks.forEach((item) => {
+      leftPadding += item.offsetWidth;
+    });
+
+    const tableBlock = document.querySelector(".domino-game-table__table");
+
+    // console.log("block, left, right", block, left, right);
+
+    sceneMoving(scene, verticalTop, verticalBottom, block, left, right);
+
+    if (block == 3) {
+      placeVericalTilesBlock3(
+        verticalTop,
+        verticalBottom,
+        leftPadding,
+        tableBlock,
+        parentBlock,
+        parentBlockLeft,
+        originTileBlock,
+        block,
+        right,
+        left
+      );
     }
-  });
 
-  let leftPadding = 0;
+    if (block == 4) {
+      placeVericalTilesBlock4(
+        verticalTop,
+        verticalBottom,
+        leftPadding,
+        tableBlock,
+        parentBlock,
+        parentBlockLeft,
+        originTileBlock,
+        block,
+        right,
+        left
+      );
+    }
 
-  leftTileBlocks.forEach((item) => {
-    leftPadding += item.offsetWidth;
-  });
+    if (block == 2) {
+      placeVericalTilesBlock2(
+        verticalTop,
+        verticalBottom,
+        leftPadding,
+        tableBlock,
+        parentBlock,
+        parentBlockLeft,
+        originTileBlock,
+        block,
+        right,
+        left
+      );
+    }
 
-  const tableBlock = document.querySelector(".domino-game-table__table");
+    if (block == 5) {
+      placeVericalTilesBlock5(
+        verticalTop,
+        verticalBottom,
+        leftPadding,
+        tableBlock,
+        parentBlock,
+        parentBlockLeft,
+        originTileBlock,
+        block,
+        right,
+        left
+      );
+    }
 
-  // console.log("block, left, right", block, left, right);
-
-  sceneMoving(scene, verticalTop, verticalBottom, block, left, right);
-
-  if (block == 3) {
-    placeVericalTilesBlock3(
-      verticalTop,
-      verticalBottom,
-      leftPadding,
-      tableBlock,
-      parentBlock,
-      parentBlockLeft,
-      originTileBlock,
-      block,
-      right,
-      left
-    );
-  }
-
-  if (block == 4) {
-    placeVericalTilesBlock4(
-      verticalTop,
-      verticalBottom,
-      leftPadding,
-      tableBlock,
-      parentBlock,
-      parentBlockLeft,
-      originTileBlock,
-      block,
-      right,
-      left
-    );
-  }
-
-  if (block == 2) {
-    placeVericalTilesBlock2(
-      verticalTop,
-      verticalBottom,
-      leftPadding,
-      tableBlock,
-      parentBlock,
-      parentBlockLeft,
-      originTileBlock,
-      block,
-      right,
-      left
-    );
-  }
-
-  if (block == 5) {
-    placeVericalTilesBlock5(
-      verticalTop,
-      verticalBottom,
-      leftPadding,
-      tableBlock,
-      parentBlock,
-      parentBlockLeft,
-      originTileBlock,
-      block,
-      right,
-      left
-    );
-  }
-
-  if (block == 1) {
-    placeVericalTilesBlock1(
-      verticalTop,
-      verticalBottom,
-      leftPadding,
-      tableBlock,
-      parentBlock,
-      parentBlockLeft,
-      originTileBlock,
-      block,
-      right,
-      left
-    );
+    if (block == 1) {
+      placeVericalTilesBlock1(
+        verticalTop,
+        verticalBottom,
+        leftPadding,
+        tableBlock,
+        parentBlock,
+        parentBlockLeft,
+        originTileBlock,
+        block,
+        right,
+        left
+      );
+    }
   }
 }
 function countTilesInDefaultArr(arr) {
@@ -469,6 +553,10 @@ function edgeControl() {
   if (!outerTableBlock || !tableBlock) {
     return;
   }
+  // tableBlock.style.transform = `scale(0.8)`;
+  // tableBlock.style.top = `0`;
+  // tableBlock.style.left = `0`;
+  // tableBlock.style.translate = `0`;
   const tableLeft = outerTableBlock.getBoundingClientRect().left;
   const tableRight =
     window.innerWidth - (tableLeft + outerTableBlock.offsetWidth);
@@ -572,7 +660,7 @@ function horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth) {
   let closestRightBlock = allBlocks[0];
   allBlocks.forEach((block) => {
     // check if block has tiles
-    if (block.innerHTML) {
+    if (block && block.innerHTML) {
       if (
         block.getBoundingClientRect().left <
         closestLeftBlock.getBoundingClientRect().left
@@ -594,7 +682,7 @@ function horizontalEdgeControl(tableBlock, tableLeft, tableRight, tileWidth) {
 
   const leftDifference =
     closestLeftBlock.getBoundingClientRect().left - tableLeft - 10;
-  const rightDifference = blockRight - tableRight - 10;
+  const rightDifference = blockRight - tableRight - 0;
 
   const tableBlockLeft = +tableBlock.style.translate.split("px")[0];
 
@@ -2039,6 +2127,7 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
               }
             });
 
+            console.log(availableDoubles);
             availableDoubles.forEach((doubleTile) => {
               if (doubleTile.central == true) {
                 corners.push({
@@ -2061,6 +2150,9 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
             sisterCorners.push(corner);
           }
         });
+
+        console.log(sisterCorners);
+
         if (sisterCorners.length > 1 && tilesAmount > 1) {
           tile.classList.add("sister-highlight");
 
@@ -2107,6 +2199,7 @@ const addTelephoneSisterEventListeners = (
   // функция для отправки систр тайла и очистки после нажатия
   function telephoneSisterTilesListener(sisterTile, thisTile) {
     return function () {
+      console.log("поставилось через систер тайл");
       if (!thisTile.classList.contains("highlight")) {
         return;
       }
@@ -2132,7 +2225,10 @@ const addTelephoneSisterEventListeners = (
       let sceneTiles = document.querySelectorAll(".domino-game-table__tile");
 
       sceneTiles.forEach((sceneTile) => {
-        sceneTile.removeEventListener("click", telephoneSisterTilesListener);
+        sceneTile.removeEventListener(
+          "click",
+          telephoneSisterTilesListener(sisterTile, thisTile)
+        );
 
         sceneTile.classList.remove("highlight", `finger-left`);
         sceneTile.classList.remove("sister-highlight");
@@ -2144,11 +2240,11 @@ const addTelephoneSisterEventListeners = (
           `.domino-game-table__tile[tileid="${corner.id}"]`
         );
         if (sisterTileElement) {
-          sisterTileElement.classList.remove("highlight", `finger-left`);
+          sisterTileElement.classList.remove("highlight");
           sisterTileElement.classList.remove("sister-highlight");
           sisterTileElement.removeEventListener(
             "click",
-            telephoneSisterTilesListener(sisterTile, sisterTileElement)
+            telephoneSisterTilesListener(sisterTile, thisTile)
           );
         }
       });
@@ -2158,11 +2254,12 @@ const addTelephoneSisterEventListeners = (
   // ставим новые лисенеры
   sisterCorners.forEach((corner) => {
     let sisterTile = corner.side;
+    console.log(corner, "CORENT OPKOP ========");
     const sisterTileElement = document.querySelector(
       `.domino-game-table__tile[tileid="${corner.id}"]`
     );
     if (sisterTileElement) {
-      sisterTileElement.classList.add("highlight", `finger-left`);
+      sisterTileElement.classList.add("highlight");
       const clickHandler = telephoneSisterTilesListener(
         sisterTile,
         sisterTileElement
@@ -3108,6 +3205,7 @@ function setTimer(distance, timer, existingTimer, userBlock, tiles = null) {
 }
 
 export function showAutoTurnWindow(isSkipped) {
+  const siteLanguage = window.siteLanguage;
   // place small window above user avatar
   const userBlock = document.querySelector(".domino-game-user");
 
@@ -3119,7 +3217,9 @@ export function showAutoTurnWindow(isSkipped) {
   const autoWindow = document.createElement("div");
   autoWindow.classList.add("auto-window");
 
-  autoWindow.innerHTML = isSkipped ? "Ход пропущен!" : "Авто-ход!";
+  autoWindow.innerHTML = isSkipped
+    ? siteLanguage.dominoGame.turnSkipped
+    : siteLanguage.dominoGame.autoTurn;
 
   userBlock.appendChild(autoWindow);
 
@@ -3242,6 +3342,10 @@ export function dropTableInfo() {
   if (tableBlock) {
     tableBlock.innerHTML = "";
     tableBlock.style.scale = "1";
+    // tableBlock.style.transform = `scale(1)`;
+    tableBlock.style.top = "0";
+    tableBlock.style.left = "0";
+    // tableBlock.style.translate = `unset`;
   }
   localStorage.setItem("dominoGameScene", JSON.stringify([]));
 
@@ -3292,6 +3396,7 @@ export const showSkippedEnemyTurn = (userId) => {
 };
 
 export function showEnemyAutoTurnWindow(enemyBlock) {
+  const siteLanguage = window.siteLanguage;
   const existingAutoWindow = document.querySelector(".auto-window");
   if (existingAutoWindow) {
     existingAutoWindow.remove();
@@ -3299,7 +3404,7 @@ export function showEnemyAutoTurnWindow(enemyBlock) {
 
   const autoWindow = document.createElement("div");
   autoWindow.classList.add("auto-window-enemy");
-  autoWindow.innerHTML = "Ход пропущен!";
+  autoWindow.innerHTML = siteLanguage.dominoGame.turnSkipped;
 
   if (enemyBlock) {
     enemyBlock.appendChild(autoWindow);
@@ -3459,8 +3564,8 @@ export function tablePlacement() {
       )?.x + "px";
   });
 
-  window.removeEventListener("resize", tablePlacement);
-  window.addEventListener("resize", tablePlacement);
+  // window.removeEventListener("resize", tablePlacement);
+  // window.addEventListener("resize", tablePlacement);
 }
 
 export function scaleDominoTable(scene) {

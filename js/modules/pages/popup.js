@@ -624,6 +624,7 @@ export const openDominoWaitingPopup = async (
   if (isPopupOpened()) {
     return;
   }
+  const siteLanguage = window.siteLanguage;
 
   const body = document.querySelector("body");
   let popupElement = document.createElement("div");
@@ -640,11 +641,11 @@ export const openDominoWaitingPopup = async (
           </div>
           <div class="popup__text domino-waiting-popup__text">
             <p><span class="domino-waiting-popup__online">${online}</span>/${playerMode}</p>
-            <p>Идет подбор игроков...</p>
+            <p>${siteLanguage.popups.findingPlayers}</p>
           </div>
           <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
-            <button class="domino-waiting-popup__button domino-waiting-popup__button-room">Выйти из комнаты</button>
-            <button class="domino-waiting-popup__button domino-waiting-popup__button-games">Выйти в меню игр</button>
+            <button class="domino-waiting-popup__button domino-waiting-popup__button-room">${siteLanguage.popups.leaveRoom}</button>
+            <button class="domino-waiting-popup__button domino-waiting-popup__button-games">${siteLanguage.popups.leaveToGameMenu}</button>
           </div>
         </div>
       </div>
@@ -700,7 +701,7 @@ export const openDominoWaitingPopup = async (
         })
       );
     } catch {
-      impPopup.openErorPopup("Ошибка подключения");
+      impPopup.openErorPopup(siteLanguage.popups.connectionErrorText);
       setTimeout(() => window.reload(), 3000);
     }
     let localUser = localStorage.getItem("user");
@@ -772,6 +773,7 @@ export const updateDominoWaitingPopup = (online) => {
 };
 
 export const openDominoTimerPopup = (online) => {
+  const siteLanguage = window.siteLanguage;
   const prevPopup = document.querySelector(".popup");
   if (prevPopup) {
     prevPopup.remove();
@@ -800,7 +802,7 @@ export const openDominoTimerPopup = (online) => {
             </div>
           </div>
           <div class="popup__text domino-starting-popup__text">
-            <p>Ожидание начала игры...</p>
+            <p>${siteLanguage.popups.startGameWaiting}</p>
           </div>
         </div>
       </div>
@@ -829,23 +831,33 @@ export const openDominoTimerPopup = (online) => {
 };
 
 export const openDominoWinGame = (winners, playersTiles) => {
+  const siteLanguage = window.siteLanguage;
+  if (isPopupOpened()) {
+    const popups = document.querySelectorAll(".popup");
+    if (popups) {
+      popups.forEach((popup) => {
+        popup.remove();
+      });
+    }
+  }
+
   const main = document.querySelector(".main__container");
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
 
   let winnersList = "";
   winners.forEach((winner) => {
-    console.log(winner);
-    winnersList += `<p>${winner.username}</p>`;
+    winnersList += `<p class = "domino-win-popup__winner">${winner.username}</p>`;
   });
 
   popupElement.innerHTML = `
     <div class="popup">
       <div class="popup__body">
         <div class="popup__content domino-win-popup">
-          <div class="popup__text domino-win-popup__text">
-            <p>Игра закончилась</p>
-            <p>Победители:</p>
+        <img class= "domino-win-popup__img" src="img/domino-winner-image.png" alt="" />
+          <div class="popup__text domino-win-popup__information">
+            <p class = "domino-win-popup__title">${siteLanguage.popups.gameFinished}</p>
+            <p class = "domino-win-popup__winners-text">${siteLanguage.popups.winners}</p>
             ${winnersList}
           </div>
         </div>
@@ -857,6 +869,16 @@ export const openDominoWinGame = (winners, playersTiles) => {
 };
 
 export const openDominoLoseGame = (winners, playersTiles) => {
+  const siteLanguage = window.siteLanguage;
+  if (isPopupOpened()) {
+    const popups = document.querySelectorAll(".popup");
+    if (popups) {
+      popups.forEach((popup) => {
+        popup.remove();
+      });
+    }
+  }
+
   const main = document.querySelector(".main__container");
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
@@ -864,7 +886,7 @@ export const openDominoLoseGame = (winners, playersTiles) => {
   let winnersList = "";
   winners.forEach((winner) => {
     winnersList += `
-      <p>${winner.username}</p>
+      <p class = "domino-win-popup__winner">${winner.username}</p>
     `;
   });
 
@@ -873,9 +895,9 @@ export const openDominoLoseGame = (winners, playersTiles) => {
       <div class="popup__body">
         <div class="popup__content domino-lose-popup">
           <div class="popup__text domino-lose-popup__text">
-            <p>Игра закончилась</p>
-            <p id="domino-lose-popup-lost">К сожалению, вы проиграли</p>
-            <p class="domino-lose-popup__winners">Победители:</p>
+            <p class = "domino-lose-popup__title">${siteLanguage.popups.gameFinished}</p>
+            <p id="domino-lose-popup-lost" class = "domino-lose-popup__title">${siteLanguage.popups.youLost}</p>
+            <p class="domino-lose-popup__winners domino-lose-popup__winners-text">${siteLanguage.popups.winners}</p>
             ${winnersList}
             <div class="domino-lose-popup__tiles">
             </div>
@@ -886,8 +908,9 @@ export const openDominoLoseGame = (winners, playersTiles) => {
   `;
   main.appendChild(popupElement);
 
-  const gameMode =
-    location.hash.split("/")[location.hash.split("/").length - 1];
+  const gameMode = location.hash
+    .split("/")
+    [location.hash.split("/").length - 1].toUpperCase();
 
   let showPoints = true;
   // if game was finished because of no available turns
@@ -904,9 +927,17 @@ export const openDominoLoseGame = (winners, playersTiles) => {
   // insert before winners block new div
   if (showPoints) {
     const newDiv = document.createElement("div");
-    newDiv.innerHTML = "Вы проиграли потому что у вас больше очков.";
+    newDiv.classList.add("domino-lose-popup__title");
+    if (gameMode == "CLASSIC") {
+      newDiv.innerHTML = siteLanguage.popups.youLostMorePoints;
+    } else {
+      newDiv.innerHTML = siteLanguage.popups.youLostPoints;
+    }
     const lostText = document.querySelector("#domino-lose-popup-lost");
-    lostText.remove();
+    if (lostText) {
+      lostText.remove();
+    }
+
     winnersBlock.parentNode.insertBefore(newDiv, winnersBlock);
   }
 
@@ -926,6 +957,7 @@ const formPopupTiles = (
   wasRoundFinished = true,
   showPoints = false
 ) => {
+  const siteLanguage = window.siteLanguage;
   console.log(playersTiles);
   const tilesBlock = popupElement.querySelector(".domino-lose-popup__tiles");
   playersTiles.forEach((playerTiles) => {
@@ -942,7 +974,7 @@ const formPopupTiles = (
               Игрок ${playerTiles.username}.
               ${
                 (playerTilesPoints && !isClassic) || showPoints
-                  ? "Костяшки: " + playerTilesPoints
+                  ? siteLanguage.popups.tiles + " " + playerTilesPoints
                   : ""
               }
             </p>
@@ -970,7 +1002,7 @@ const formPopupTiles = (
 
     if (playerTiles.tiles.length == 0) {
       tilesContainer.innerHTML += `
-        <p>Костяшки закончились</p>
+        <p>${siteLanguage.popups.tilesEnded}</p>
       `;
     }
 
@@ -990,8 +1022,14 @@ const formPopupTiles = (
 };
 
 export const openFinisedGamePopup = () => {
+  const siteLanguage = window.siteLanguage;
   if (isPopupOpened()) {
-    return;
+    const popups = document.querySelectorAll(".popup");
+    if (popups) {
+      popups.forEach((popup) => {
+        popup.remove();
+      });
+    }
   }
 
   const body = document.querySelector("body");
@@ -1012,7 +1050,7 @@ export const openFinisedGamePopup = () => {
         </div>
       </div>
       <div class="popup__text domino-finishedGameAlert-popup__text">
-        Игра окончена, ожидайде ее сброса!
+        ${siteLanguage.popups.gameFinishedWait}
       </div>
     </div>
   </div>
@@ -1030,6 +1068,15 @@ export const openDominoTelephoneRoundFinishPopup = (
   winnerId,
   playersTiles
 ) => {
+  const siteLanguage = window.siteLanguage;
+  if (isPopupOpened()) {
+    const popups = document.querySelectorAll(".popup");
+    if (popups) {
+      popups.forEach((popup) => {
+        popup.remove();
+      });
+    }
+  }
   const main = document.querySelector(".main__container");
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
@@ -1060,7 +1107,7 @@ export const openDominoTelephoneRoundFinishPopup = (
       <div class="popup__body">
         <div class="popup__content">
           <div class="popup__text domino-lose-popup__text">
-            Результаты раунда:
+            ${siteLanguage.popups.roundResults}
             <br>
             ${playersScoreList}
             <div class="domino-lose-popup__tiles">
@@ -1249,3 +1296,122 @@ export const openTextPopup = () => {
     phrasePopupContent.appendChild(phraseItem);
   }
 };
+
+export const openSettingsPopup = () => {
+  let siteLanguage = window.siteLanguage;
+  if (isPopupOpened()) {
+    return;
+  }
+  const body = document.querySelector("body");
+  let popupElement = document.createElement("div");
+  popupElement.classList.add("popup", "jackpot-popup");
+  popupElement.innerHTML = `
+    <div class="popup domino-settings-popup">
+      <div class="popup__body domino-settings-popup__body">
+        <div class="popup__content domino-settings-popup__content">
+          <div class="domino-settings-option domino-settings__sound">
+            <a class="profile__button domino-settings-option-item">
+              <img src="img/profile icons/sound.png" alt="ЗВУК" />
+              <p>${siteLanguage.profilePage.mainButtons.soundsBtnText}</p>
+              <div class="profile__button-switcher curpointer">
+                <button class="profile__button-switcher-on active">
+                  ON
+                </button>
+                <button class="profile__button-switcher-off">OFF</button>
+                </div>
+                </a>
+                </div>
+                <div class="domino-settings-option domino-settings__rooles">
+                <a class="profile__button domino-settings-option-item">
+                <img src="./img/question-tag.png" alt="" />
+                <p>${siteLanguage.popups.rules}</p>
+                </a>
+          </div>
+
+          <div class="domino-settings__button">${siteLanguage.popups.gotIt}</div>
+          </div>
+      </div>
+    </div>
+  `;
+
+  body.appendChild(popupElement);
+  const soundSwitcher = document.querySelector(".profile__button-switcher");
+  const soundOn = document.querySelector(".profile__button-switcher-on");
+  const soundOff = document.querySelector(".profile__button-switcher-off");
+
+  let menuSoundsAllowed = localStorage.getItem("sounds-menu");
+  let gameSoundsAllowed = localStorage.getItem("sounds-game");
+
+  if (menuSoundsAllowed == "true" || gameSoundsAllowed == "true") {
+    soundOn.classList.add("active");
+    soundOff.classList.remove("active");
+  } else {
+    soundOn.classList.remove("active");
+    soundOff.classList.add("active");
+  }
+
+  const toggleSound = () => {
+    if (soundOn.classList.contains("active")) {
+      soundOn.classList.remove("active");
+      soundOff.classList.add("active");
+      localStorage.setItem("sounds-game", false);
+      localStorage.setItem("sounds-menu", false);
+      impAudio.setGameSoundsAllowed(false);
+      impAudio.setMenuSoundsAllowed(false);
+    } else {
+      soundOn.classList.add("active");
+      soundOff.classList.remove("active");
+      localStorage.setItem("sounds-game", true);
+      localStorage.setItem("sounds-menu", true);
+      impAudio.setGameSoundsAllowed(true);
+      impAudio.setMenuSoundsAllowed(true);
+    }
+  };
+
+  soundSwitcher.addEventListener("click", () => {
+    toggleSound();
+  });
+
+  const rulesButton = document.querySelector(".domino-settings__rooles");
+  rulesButton.addEventListener("click", () => {
+    openRulesInfoPopup();
+  });
+
+  let gotItBtn = popupElement.querySelector(".domino-settings__button");
+  gotItBtn.addEventListener("click", function () {
+    close(popupElement);
+  });
+};
+
+export function openRulesInfoPopup() {
+  let siteLanguage = window.siteLanguage;
+  if (isPopupOpened()) {
+    const popups = document.querySelectorAll(".popup");
+    if (popups) {
+      popups.forEach((popup) => {
+        popup.remove();
+      });
+    }
+  }
+  const body = document.querySelector("body");
+  let popupElement = document.createElement("div");
+  popupElement.classList.add("popup", "jackpot-popup", "domino-rules-popup");
+  popupElement.innerHTML = `
+  <div class="popup__body jackpot-info-popup">
+    <div class="popup__content">
+    <h2>${siteLanguage.popups.rules}</h2>
+      <div class="popup__text">
+        ${siteLanguage.popups.dominoRules}
+      </div>
+      <div class="popup-button__gotit"> ${siteLanguage.profilePage.myGamesPage.statsItem.understandText}</div>
+    </div>
+  </div>
+  `;
+
+  let gotItBtn = popupElement.querySelector(".popup-button__gotit");
+  gotItBtn.addEventListener("click", function () {
+    close(popupElement);
+  });
+
+  body.appendChild(popupElement);
+}

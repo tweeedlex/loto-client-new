@@ -35,14 +35,95 @@ const intervals = [
 ];
 
 export function openDominoChoosePage() {
+  const siteLanguage = window.siteLanguage;
+  console.log(siteLanguage.chooseModeMenu);
   let main__container = document.querySelector(".main__container");
+  main__container.classList.add("footer__padding", "header__padding");
   main__container.innerHTML = `
-    <section class="domino-choose">
-      <div class="domino-choose__button classic">DOMINO CLASSIC</div>
-      <div class="domino-choose__button telephone">DOMINO TELEPHONE</div>
-    </section>
+  <section class="domino-choose choose-mode">
+  <div class="domino-choose__button choose-mode__item mode-item loto">
+    <div class="mode-item__image">
+      <img src="./img/choose-mode-loto.png" alt="" />
+    </div>
+
+    <div class="mode-item__button mode-loto">${siteLanguage.chooseModeMenu.loto}</div>
+  </div>
+  <div
+    class="domino-choose__button choose-mode__item mode-item classic"
+  >
+    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.earnPoints}</div>
+
+    <div class="mode-item__image">
+      <img src="./img/choose-mode-domino__classic.png" alt="" />
+    </div>
+    <div class="mode-item__button mode-dom-classic">${siteLanguage.chooseModeMenu.dominoClassic}</div>
+    <div class="mode-item__info players-info">
+      <p>2/4</p>
+      <p>игроков</p>
+    </div>
+  </div>
+  <div
+    class="domino-choose__button choose-mode__item mode-item telephone"
+  >
+    <div class="mode-item__info game-info">${siteLanguage.chooseModeMenu.dominoClassic}</div>
+
+    <div class="mode-item__image">
+      <img src="./img/choose-mode-domino__telephone.png" alt="" />
+    </div>
+    <div class="mode-item__button mode-dom-telephone">
+    ${siteLanguage.chooseModeMenu.dominoTelephone}
+    </div>
+    <div class="mode-item__info players-info">
+      <p>2/4</p>
+      <p>игроков</p>
+    </div>
+  </div>
+  <div
+    class="domino-choose__button choose-mode__item mode-item backgamons"
+  >
+   
+    <div class="mode-item__image">
+      <img src="./img/choose-mode-backgammons.png" alt="" />
+    </div>
+    <div class="mode-item__button mode-dom-backgammons">${siteLanguage.chooseModeMenu.backgammon}</div>
+  </div>
+  <div
+    class="domino-choose__button choose-mode__item mode-item backgamons "
+    
+  >
+  <div class="mode-item__locked">
+  <img src="./img/choose-mode-locked.png" alt="" />
+</div>
+    <div class="mode-item__image">
+      <img src="./img/choose-mode-backgammons.png" alt="" />
+    </div>
+    <div class="mode-item__button mode-dom-backgammons">${siteLanguage.chooseModeMenu.backgammon}</div>
+  </div>
+</section>
   `;
 
+  let lotoButton = document.querySelector(".mode-item.loto");
+  if (lotoButton) {
+    lotoButton.addEventListener("click", function () {
+      let localUser = localStorage.getItem("user");
+
+      if (localUser) {
+        localUser = JSON.parse(localUser);
+      }
+      let isCurrGameMenuPage = document.querySelector(".games");
+      if (!isCurrGameMenuPage) {
+        location.hash = "#";
+        impNav.redirectToMainPage();
+        ws.send(
+          JSON.stringify({
+            username: localUser.username,
+            userId: localUser.userId,
+            method: "getAllInfo",
+          })
+        );
+      }
+    });
+  }
   const classicButton = document.querySelector(
     ".domino-choose__button.classic"
   );
@@ -63,6 +144,7 @@ export function openDominoMenuPage(
   ws = null,
   gameMode = "CLASSIC"
 ) {
+  const siteLanguage = window.siteLanguage;
   const main = document.querySelector("main");
   main.innerHTML = "";
   let main__container = document.createElement("div");
@@ -100,7 +182,7 @@ export function openDominoMenuPage(
         })
       );
     } catch {
-      impPopup.openErorPopup("Ошибка подключения");
+      impPopup.openErorPopup(siteLanguage.popups.connectionError);
       setTimeout(() => window.reload(), 3000);
     }
   }, 200);
@@ -114,13 +196,13 @@ function createChoosePlayersButtons(main__container, isTwoPlayers) {
     "choose-players-button",
     "choose-players-button-2"
   );
-  chooseTwoPlayersButton.innerHTML = `2 игрока`;
+  chooseTwoPlayersButton.innerHTML = siteLanguage.dominoRoomsMenu.twoPlayers;
   const chooseFourPlayersButton = document.createElement("button");
   chooseFourPlayersButton.classList.add(
     "choose-players-button",
     "choose-players-button-4"
   );
-  chooseFourPlayersButton.innerHTML = `4 игрока`;
+  chooseFourPlayersButton.innerHTML = siteLanguage.dominoRoomsMenu.fourPlayers;
 
   if (isTwoPlayers) {
     chooseTwoPlayersButton.classList.add("active");
@@ -149,6 +231,7 @@ function createChoosePlayersButtons(main__container, isTwoPlayers) {
 }
 
 function formTwoPlayersMenu(main, main__container, ws, gameMode) {
+  const siteLanguage = window.siteLanguage;
   const gamesBlock = document.createElement("div");
   gamesBlock.classList.add("domino-games", "games");
 
@@ -159,72 +242,175 @@ function formTwoPlayersMenu(main, main__container, ws, gameMode) {
     { id: 4, bet: 5 },
     { id: 5, bet: 10 },
   ];
-
+  // ${siteLanguage.dominoRoomsMenu.domino}
   let roomsHtml = ``;
   rooms.forEach((room) => {
-    roomsHtml += `
-    <div class="domino-room domino-room-players-2 domino-room-mode-${gameMode.toLowerCase()}" dominoRoomId=${
-      room.id
-    }>
-      <div class="domino-room-header">
-        <p class="domino-room-header__title">Домино: ${
-          gameMode == "CLASSIC" ? "Классическая" : "Телефон"
-        } <span>(2 игроков)</span></p>
-        <div class="domino-room-header__info">
-          <p class="domino-room-bet">
-            ${room.bet.toFixed(2)}₼
-          </p>
-          <p class="domino-room-duration">
-            Длительность игры: 5 минут
-          </p>
+    // roomsHtml += `
+    // <div class="domino-room domino-room-players-2 domino-room-mode-${gameMode.toLowerCase()}" dominoRoomId=${
+    //   room.id
+    // }>
+    //   <div class="domino-room-header">
+    //     <p class="domino-room-header__title">
+
+    //      ${
+    //        gameMode == "CLASSIC"
+    //          ? siteLanguage.dominoRoomsMenu.classic
+    //          : siteLanguage.dominoRoomsMenu.telephone
+    //      } <span>(2 игроков)</span></p>
+    //     <div class="domino-room-header__info">
+    //       <p class="domino-room-bet">
+    //         ${room.bet.toFixed(2)}₼
+    //       </p>
+    //       <p class="domino-room-duration">
+    //         ${siteLanguage.dominoRoomsMenu.gameDuration}
+    //       </p>
+    //     </div>
+    //   </div>
+    //   <div class="domino-room-content">
+    //     <div class="domino-room-content__tables">
+    //       <div class="domino-room-content__table" tableId=1>
+    //         <div class="domino-room-content__table-image">
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //         </div>
+    //         <div class="domino-room-content__table-info">
+    //           <p class="domino-room-table-info__title">${
+    //             siteLanguage.dominoRoomsMenu.table
+    //           } 1</p>
+    //           <p class="domino-room-table-info__timer">00:00 ${
+    //             siteLanguage.dominoRoomsMenu.seconds
+    //           }</p>
+    //           <p class="domino-room-table-info__players">${
+    //             siteLanguage.dominoRoomsMenu.players
+    //           } <span>0</span></p>
+    //         </div>
+    //       </div>
+
+    //       <div class="domino-room-content__table" tableId=2>
+    //         <div class="domino-room-content__table-image">
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //         </div>
+    //         <div class="domino-room-content__table-info">
+    //           <p class="domino-room-table-info__title">${
+    //             siteLanguage.dominoRoomsMenu.table
+    //           } 2</p>
+    //           <p class="domino-room-table-info__timer">00:00 ${
+    //             siteLanguage.dominoRoomsMenu.seconds
+    //           }</p>
+    //           <p class="domino-room-table-info__players">${
+    //             siteLanguage.dominoRoomsMenu.players
+    //           } <span>0</span></p>
+    //         </div>
+    //       </div>
+
+    //       <div class="domino-room-content__table" tableId=3>
+    //         <div class="domino-room-content__table-image">
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //           <div class="domino-room-table-half domino-room-table-part"></div>
+    //         </div>
+    //         <div class="domino-room-content__table-info">
+    //           <p class="domino-room-table-info__title">${
+    //             siteLanguage.dominoRoomsMenu.table
+    //           } 3</p>
+    //           <p class="domino-room-table-info__timer">00:00 ${
+    //             siteLanguage.dominoRoomsMenu.seconds
+    //           }</p>
+    //           <p class="domino-room-table-info__players">${
+    //             siteLanguage.dominoRoomsMenu.players
+    //           } <span>0</span></p>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+    // `;
+
+    console.log(room.id);
+    roomsHtml += ` <div class="domino-room domino-room-players-2 domino-room-mode-${gameMode.toLowerCase()}" dominoRoomId="${+room.id}">
+    <div class="domino-room-header">
+      <img
+        class="domino-room-header__img"
+        src="./img/loto-room-card-logo.png"
+        alt=""
+      />
+      <p class="domino-room-header__title">
+      ${
+        gameMode == "CLASSIC"
+          ? siteLanguage.dominoRoomsMenu.classic
+          : siteLanguage.dominoRoomsMenu.telephone
+      } <span>(${siteLanguage.dominoRoomsMenu.twoPlayers})</span>
+      </p>
+      <div class="domino-room-header__rules">
+        <img src="./img/domino-menu-quest.png" alt="" />
+      </div>
+    </div>
+    <div class="domino-room-content">
+      <div class="domino-room-content__tables">
+        <div class="domino-room-content__table" tableId=1>
+          <div class="domino-room-content__table-image">
+            <div class=" domino-room-table-half domino-room-table-part "></div>
+            <div class="domino-room-table-half domino-room-table-part"></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 1</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+              
+            </div>
+          </div>
+        </div>
+
+        <div class="domino-room-content__table" tableId=2>
+          <div class="domino-room-content__table-image">
+            <div class="domino-room-table-half domino-room-table-part "></div>
+            <div class="domino-room-table-half domino-room-table-part"></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 2</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+             
+            </div>
+          </div>
+        </div>
+
+        <div class="domino-room-content__table" tableId=3>
+          <div class="domino-room-content__table-image">
+            <div class="domino-room-table-half domino-room-table-part"></div>
+            <div class="domino-room-table-half domino-room-table-part"></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 3</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+            
+            </div>
+          </div>
         </div>
       </div>
-      <div class="domino-room-content">
-        <div class="domino-room-content__tables">
-          <div class="domino-room-content__table" tableId=1>
-            <div class="domino-room-content__table-image">
-              <div class="domino-room-table-half domino-room-table-part"></div>
-              <div class="domino-room-table-half domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 1</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
 
-          <div class="domino-room-content__table" tableId=2>
-            <div class="domino-room-content__table-image">
-              <div class="domino-room-table-half domino-room-table-part"></div>
-              <div class="domino-room-table-half domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 2</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
-
-          <div class="domino-room-content__table" tableId=3>
-            <div class="domino-room-content__table-image">
-              <div class="domino-room-table-half domino-room-table-part"></div>
-              <div class="domino-room-table-half domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 3</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
-        </div>
-      </div> 
+      <div class="domino-room__info">
+        <p class="domino-room-bet__text">Цена комнаты:</p>
+        <p class="domino-room-bet"> ${room.bet.toFixed(2)}₼</p>
+        <p class="domino-room-duration"> ${
+          siteLanguage.dominoRoomsMenu.gameDuration
+        }</p>
+      </div>
     </div>
-    `;
+  </div>`;
   });
 
   gamesBlock.innerHTML = roomsHtml;
   main__container.appendChild(gamesBlock);
   main.appendChild(main__container);
+
+  let dominoRulesButton = document.querySelector(".domino-room-header__rules");
+  if (dominoRulesButton) {
+    dominoRulesButton.addEventListener("click", function () {
+      impPopup.openRulesInfoPopup();
+    });
+  }
   addDominoListeners(ws);
 }
 
@@ -242,79 +428,102 @@ function formFourPlayersMenu(main, main__container, ws, gameMode) {
 
   let roomsHtml = ``;
   rooms.forEach((room) => {
-    roomsHtml += `
-    <div class="domino-room domino-room-players-4 domino-room-mode-${gameMode.toLowerCase()}" dominoRoomId="${
-      room.id
-    }">
-      <div class="domino-room-header">
-        <p class="domino-room-header__title">Домино: ${
-          gameMode == "CLASSIC" ? "Классическая" : "Телефон"
-        } <span>(4 игроков)</span></p>
-        <div class="domino-room-header__info">
-          <p class="domino-room-bet">
-            ${room.bet.toFixed(2)}₼
-          </p>
-          <p class="domino-room-duration">
-            Длительность игры: 5 минут
-          </p>
+    roomsHtml += ` <div class="domino-room domino-room-players-4 domino-room-mode-${gameMode.toLowerCase()}" dominoRoomId="${+room.id}">
+    <div class="domino-room-header">
+      <img
+        class="domino-room-header__img"
+        src="./img/loto-room-card-logo.png"
+        alt=""
+      />
+      <p class="domino-room-header__title">
+      ${
+        gameMode == "CLASSIC"
+          ? siteLanguage.dominoRoomsMenu.classic
+          : siteLanguage.dominoRoomsMenu.telephone
+      } <span>(${siteLanguage.dominoRoomsMenu.fourPlayers})</span>
+      </p>
+      <div class="domino-room-header__rules">
+        <img src="./img/domino-menu-quest.png" alt="" />
+      </div>
+    </div>
+    <div class="domino-room-content">
+      <div class="domino-room-content__tables">
+        <div class="domino-room-content__table"  tableId=1>
+          <div class="domino-room-content__table-image domino-room-content__table-image-grid">
+          <div class=" domino-room-table-quater"></div>
+          <div class="domino-room-table-part domino-room-table-quater"></div> 
+          <div class="domino-room-table-part domino-room-table-quater"></div>
+          <div class="domino-room-table-part domino-room-table-quater"></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 1</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+             
+            </div>
+          </div>
+        </div>
+
+        <div class="domino-room-content__table " tableId=2>
+          <div class="domino-room-content__table-image domino-room-content__table-image-grid">
+          <div class=" domino-room-table-part domino-room-table-quater "></div>
+          <div class=" domino-room-table-part domino-room-table-quater"></div> 
+          <div class=" domino-room-table-part domino-room-table-quater"></div>
+          <div class=" domino-room-table-part domino-room-table-quater "></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 2</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+              
+            </div>
+          </div>
+        </div>
+        
+        <div class="domino-room-content__table " tableId=3>
+          <div class="domino-room-content__table-image domino-room-content__table-image-grid">
+          <div class="domino-room-table-part domino-room-table-quater"></div>
+          <div class="domino-room-table-part domino-room-table-quater"></div> 
+          <div class="domino-room-table-part domino-room-table-quater"></div>
+          <div class="domino-room-table-part domino-room-table-quater"></div>
+          </div>
+          <div class="domino-room-content__table-info">
+            <!-- <p class="domino-room-table-info__title">Стол 3</p> -->
+            <p class="domino-room-table-info__timer">00:00</p>
+            <div class="domino-room-table-info__players">
+             
+            </div>
+          </div>
         </div>
       </div>
-      <div class="domino-room-content">
-        <div class="domino-room-content__tables">
-          <div class="domino-room-content__table" tableId="1">
-            <div class="domino-room-content__table-image-grid">
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 1</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
 
-          <div class="domino-room-content__table" tableId="2">
-            <div class="domino-room-content__table-image-grid">
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 2</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
-
-          <div class="domino-room-content__table" tableId="3">
-            <div class="domino-room-content__table-image-grid">
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-              <div class="domino-room-table-quater domino-room-table-part"></div>
-            </div>
-            <div class="domino-room-content__table-info">
-              <p class="domino-room-table-info__title">Стол 3</p>
-              <p class="domino-room-table-info__timer">00:00 сек</p> 
-              <p class="domino-room-table-info__players">Игроков: <span>0</span></p>
-            </div>
-          </div>
-        </div>
-      </div> 
+      <div class="domino-room__info">
+        <p class="domino-room-bet__text">Цена комнаты:</p>
+        <p class="domino-room-bet"> ${room.bet.toFixed(2)}₼</p>
+        <p class="domino-room-duration"> ${
+          siteLanguage.dominoRoomsMenu.gameDuration
+        }</p>
+      </div>
     </div>
-    `;
+  </div>`;
   });
 
   gamesBlock.innerHTML = roomsHtml;
   main__container.appendChild(gamesBlock);
   main.appendChild(main__container);
+
+  let dominoRulesButton = document.querySelector(".domino-room-header__rules");
+  if (dominoRulesButton) {
+    dominoRulesButton.addEventListener("click", function () {
+      impPopup.openRulesInfoPopup();
+    });
+  }
+
   addDominoListeners(ws);
 }
 
 const addDominoListeners = () => {
+  const siteLanguage = window.siteLanguage;
   const dominoRooms = document.querySelectorAll(".domino-room");
   dominoRooms.forEach((room) => {
     const tables = room.querySelectorAll(".domino-room-content__table");
@@ -335,7 +544,10 @@ const addDominoListeners = () => {
         console.log(user.balance, betInfo.bet);
 
         if (user.balance < betInfo.bet) {
-          impPopup.openErorPopup("Недостаточно средств на балансе", 300);
+          impPopup.openErorPopup(
+            siteLanguage.popups.notEnoughMoneyBalance,
+            300
+          );
           return;
         }
 
@@ -371,27 +583,33 @@ export const getDominoRoomBetInfo = (roomId) => {
     case 1:
       return {
         bet: 0.5,
+        commission: 0.075,
       };
     case 2:
       return {
         bet: 1,
+        commission: 0.15,
       };
     case 3:
       return {
         bet: 3,
+        commission: 0.45,
       };
     case 4:
       return {
         bet: 5,
+        commission: 0.75,
       };
     case 5:
       return {
         bet: 10,
+        commission: 1.5,
       };
   }
 };
 
 export async function addDominoRoomsInfo(msg) {
+  const siteLanguage = window.siteLanguage;
   let { dominoInfo } = msg;
   if (!dominoInfo) {
     return;
@@ -419,9 +637,16 @@ export async function addDominoRoomsInfo(msg) {
     const tables = room.querySelectorAll(".domino-room-content__table");
     tables.forEach((table) => {
       const playersOnline = table.querySelector(
-        ".domino-room-table-info__players span"
+        ".domino-room-table-info__players"
       );
-      playersOnline.innerHTML = 0;
+      if (playersOnline) {
+        let playersItems = playersOnline.querySelectorAll(
+          ".domino-room-table-info__players-item"
+        );
+        playersItems.forEach((item) => {
+          item.remove();
+        });
+      }
       let tableHalfs = table.querySelectorAll(".domino-room-table-part");
       tableHalfs.forEach((item) => [item.classList.remove("filled")]);
     });
@@ -435,92 +660,103 @@ export async function addDominoRoomsInfo(msg) {
     const dominoRoom = document.querySelector(
       `.domino-room[dominoRoomId="${room.dominoRoomId}"]`
     );
-
-    const tables = dominoRoom.querySelectorAll(".domino-room-content__table");
-    if (tables && tables.length > 0) {
-      for (const table of tables) {
-        const tableId = +table.getAttribute("tableId");
-        const tableInfo = room.tables.find(
-          (table) => table.tableId === tableId
-        );
-        if (tableInfo) {
-          const playersOnline = table.querySelector(
-            ".domino-room-table-info__players span"
+    if (dominoRoom) {
+      const tables = dominoRoom.querySelectorAll(".domino-room-content__table");
+      if (tables && tables.length > 0) {
+        for (const table of tables) {
+          const tableId = +table.getAttribute("tableId");
+          const tableInfo = room.tables.find(
+            (table) => table.tableId === tableId
           );
-          let tableHalfs = table.querySelectorAll(".domino-room-table-part");
-          for (let i = 0; i < tableInfo.online; i++) {
-            tableHalfs[i].classList.add("filled");
-          }
-          playersOnline.innerHTML = tableInfo.online;
-          const timerBlock = table.querySelector(
-            ".domino-room-table-info__timer"
-          );
-          // чистим интервалы
-
-          let currtimersFound = currTimers.filter((interval) => {
-            return (
-              interval.roomid == room.dominoRoomId &&
-              interval.tableid == tableInfo.tableId &&
-              interval.playerMode == room.playerMode &&
-              interval.gameMode == room.gameMode
+          if (tableInfo) {
+            const playersOnline = table.querySelector(
+              ".domino-room-table-info__players"
             );
-          });
-          currtimersFound.forEach((interval) => {
-            clearInterval(interval.timer);
-          });
-
-          intervals
-            .filter(
-              (interval) =>
-                interval.dominoRoomId === room.dominoRoomId &&
-                interval.tableId === tableInfo.tableId
-            )
-            .forEach((interval) => {
-              clearInterval(interval.interval);
-              intervals.splice(intervals.indexOf(interval), 1);
-            });
-
-          if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
-            timerBlock.innerHTML = "Игра идет";
-          } else if (tableInfo.isStarted == true && gameMode == "TELEPHONE") {
-            timerBlock.innerHTML = `Очки: ${tableInfo.points}`;
-          }
-
-          if (tableInfo.startedAt != null && tableInfo.isStarted == false) {
-            // запускаем таймер на стол
-            let countDownDate = new Date(tableInfo.startedAt).getTime() + 10000;
-
-            let nowClientTime = await impLotoNav.NowClientTime();
-
-            let distance = countDownDate - nowClientTime;
-            let timer = setInterval(() => {
-              distance -= 500;
-
-              timerBlock.innerHTML = `00:${String(
-                Math.ceil(distance / 1000)
-              ).padStart(2, "0")} сек`;
-
-              if (distance < 0) {
-                clearInterval(timer);
-
-                if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
-                  timerBlock.innerHTML = "Игра идет";
-                } else if (
-                  tableInfo.isStarted == true &&
-                  gameMode == "TELEPHONE"
-                ) {
-                  timerBlock.innerHTML = `Очки: ${tableInfo.points}`;
-                }
+            let tableHalfs = table.querySelectorAll(".domino-room-table-part");
+            for (let i = 0; i < tableInfo.online; i++) {
+              tableHalfs[i].classList.add("filled");
+            }
+            if (playersOnline) {
+              for (let i = 0; i < tableInfo.online; i++) {
+                playersOnline.innerHTML += `
+                  <div class="domino-room-table-info__players-item">
+                    <img src="./img/domino-online-icon.png" alt="" />
+                  </div>
+                `;
               }
-            }, 500);
+            }
+            const timerBlock = table.querySelector(
+              ".domino-room-table-info__timer"
+            );
+            // чистим интервалы
 
-            intervals.push({
-              dominoRoomId: room.dominoRoomId,
-              tableId: tableInfo.tableId,
-              playerMode: room.playerMode,
-              gameMode: room.gameMode.toUpperCase(),
-              interval: timer,
+            let currtimersFound = currTimers.filter((interval) => {
+              return (
+                interval.roomid == room.dominoRoomId &&
+                interval.tableid == tableInfo.tableId &&
+                interval.playerMode == room.playerMode &&
+                interval.gameMode == room.gameMode
+              );
             });
+            currtimersFound.forEach((interval) => {
+              clearInterval(interval.timer);
+            });
+
+            intervals
+              .filter(
+                (interval) =>
+                  interval.dominoRoomId === room.dominoRoomId &&
+                  interval.tableId === tableInfo.tableId
+              )
+              .forEach((interval) => {
+                clearInterval(interval.interval);
+                intervals.splice(intervals.indexOf(interval), 1);
+              });
+
+            if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
+              timerBlock.innerHTML = "Игра идет";
+            } else if (tableInfo.isStarted == true && gameMode == "TELEPHONE") {
+              timerBlock.innerHTML = `Очки: ${tableInfo.points}`;
+            }
+
+            if (tableInfo.startedAt != null && tableInfo.isStarted == false) {
+              // запускаем таймер на стол
+              let countDownDate =
+                new Date(tableInfo.startedAt).getTime() + 10000;
+
+              let nowClientTime = await impLotoNav.NowClientTime();
+
+              let distance = countDownDate - nowClientTime;
+              let timer = setInterval(() => {
+                distance -= 500;
+
+                timerBlock.innerHTML = `00:${String(
+                  Math.ceil(distance / 1000)
+                ).padStart(2, "0")} сек`;
+
+                if (distance < 0) {
+                  clearInterval(timer);
+
+                  if (tableInfo.isStarted == true && gameMode != "TELEPHONE") {
+                    timerBlock.innerHTML =
+                      siteLanguage.dominoRoomsMenu.gameGoing;
+                  } else if (
+                    tableInfo.isStarted == true &&
+                    gameMode == "TELEPHONE"
+                  ) {
+                    timerBlock.innerHTML = `${siteLanguage.dominoRoomsMenu.points} ${tableInfo.points}`;
+                  }
+                }
+              }, 500);
+
+              intervals.push({
+                dominoRoomId: room.dominoRoomId,
+                tableId: tableInfo.tableId,
+                playerMode: room.playerMode,
+                gameMode: room.gameMode.toUpperCase(),
+                interval: timer,
+              });
+            }
           }
         }
       }
@@ -529,7 +765,6 @@ export async function addDominoRoomsInfo(msg) {
 }
 
 export async function createDominoTimer(msg) {
-  console.log(msg, "dfjkdsfklashjfkadshklasdhfkljhsda");
   // "startDominoTableTimerMenu"
   let startedAt = msg.startedAt;
   const tables = document.querySelectorAll(".domino-room-content__table");
@@ -572,7 +807,7 @@ export async function createDominoTimer(msg) {
           });
 
         if (msg.isStarted == true) {
-          timerBlock.innerHTML = "Игра идет";
+          timerBlock.innerHTML = siteLanguage.dominoRoomsMenu.gameGoing;
           return;
         }
 
@@ -587,12 +822,12 @@ export async function createDominoTimer(msg) {
 
           timerBlock.innerHTML = `00:${String(
             Math.ceil(distance / 1000)
-          ).padStart(2, "0")} сек`;
+          ).padStart(2, "0")}`;
 
           if (distance < 0) {
             clearInterval(timer);
 
-            timerBlock.innerHTML = "Игра идет";
+            timerBlock.innerHTML = siteLanguage.dominoRoomsMenu.gameGoing;
           }
         }, 500);
 
@@ -625,6 +860,7 @@ function getPlayerMode() {
 export function addOnlineToTable(msg) {
   const roomId = msg.dominoRoomId;
   const tableId = msg.tableId;
+  console.log(msg, "msdsdsdsds");
 
   const playerMode = getPlayerMode();
 
@@ -645,16 +881,27 @@ export function addOnlineToTable(msg) {
   );
   if (!tableBlock) return;
   const playersOnline = tableBlock.querySelector(
-    ".domino-room-table-info__players span"
+    ".domino-room-table-info__players"
   );
-  let roomHalfs = tableBlock.querySelectorAll(".domino-room-table-part");
+  if (playersOnline) {
+    let peopleItems = playersOnline.querySelectorAll(
+      ".domino-room-table-info__players-item"
+    );
 
-  for (let i = 0; i < Number(playersOnline.innerHTML) + 1; i++) {
-    let roomHalf = roomHalfs[i];
-    roomHalf.classList.add("filled");
+    let roomHalfs = tableBlock.querySelectorAll(".domino-room-table-part");
+
+    playersOnline.innerHTML += `
+      <div class="domino-room-table-info__players-item">
+        <img src="./img/domino-online-icon.png" alt="" />
+      </div>
+    `;
+    for (let i = 0; i < peopleItems.length + 1; i++) {
+      let roomHalf = roomHalfs[i];
+      roomHalf.classList.add("filled");
+    }
+
+    // playersOnline.innerHTML = Number(playersOnline.innerHTML) + 1;
   }
-
-  playersOnline.innerHTML = Number(playersOnline.innerHTML) + 1;
 }
 
 export function openDominoTable(
@@ -663,6 +910,7 @@ export function openDominoTable(
   playerMode = null,
   gameMode = null
 ) {
+  const siteLanguage = window.siteLanguage;
   if (!dominoRoomId || !tableId) {
     const hash = window.location.hash.split("/");
     dominoRoomId = +hash[1];
@@ -675,8 +923,10 @@ export function openDominoTable(
   <section class="domino-game-page" id="domino-game-page">
   <div class = "domino-game-room__preloader"><div class="lds-ring"><div></div><div></div><div></div><div></div></div></div>
   <div class="domino-games__container">
+  <div class = "domino-game-page__settings"> <img src="img/settings-domino.png" alt="" /></div>
     <div class="domino-game-page__body-wrapper">
       <div class="domino-game-page__body">
+       
         <div class="domino-game-page-table-block domino-game-table">
           <div class="domino-game-table__table">
             <div id="1" class="domino-game-table__table-tiles-block-1 domino-game-table__table-tiles-block"></div>
@@ -701,8 +951,8 @@ export function openDominoTable(
             </div>
           </div>
           <div class="domino-table-store">
-            <div class="domino-table-store__text">Базар</div>
             <div class="domino-table-store__score">0</div>
+            <div class="domino-table-store__text">${siteLanguage.dominoTable.market}</div>
           </div>
         </div>
       </div>
@@ -738,14 +988,26 @@ export function openDominoTable(
 
   const emojiButton = document.querySelector(".emoji-button");
   const textButton = document.querySelector(".chat-button");
+  const openSettingsPopup = document.querySelector(
+    ".domino-game-page__settings"
+  );
+  if (emojiButton) {
+    emojiButton.addEventListener("click", () => {
+      impPopup.openEmojiPopup();
+    });
+  }
 
-  emojiButton.addEventListener("click", () => {
-    impPopup.openEmojiPopup();
-  });
+  if (textButton) {
+    textButton.addEventListener("click", () => {
+      impPopup.openTextPopup();
+    });
+  }
 
-  textButton.addEventListener("click", () => {
-    impPopup.openTextPopup();
-  });
+  if (openSettingsPopup) {
+    openSettingsPopup.addEventListener("click", () => {
+      impPopup.openSettingsPopup();
+    });
+  }
 }
 
 export const startTableTimer = async (msg) => {

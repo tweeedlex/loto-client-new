@@ -215,7 +215,7 @@ export async function hashNavigation() {
       isAudioAllowed || null
     );
     // ============= DOMINO ============== //
-  } else if (hash == "#domino-choose") {
+  } else if (hash == "#gamemode-choose") {
     let navMenu = document.querySelector(".menu-footer");
     if (navMenu) {
       const navButtons = navMenu.querySelectorAll(".active");
@@ -488,7 +488,7 @@ async function openRoomByHash(hash) {
 }
 
 // use location.hash = ""
-function redirectToMainPage() {
+export function redirectToMainPage() {
   let siteLanguage = window.siteLanguage;
 
   const main = document.querySelector("main");
@@ -844,45 +844,38 @@ export function pageNavigation(ws) {
   createPageNavBlock();
   let navMenu = document.querySelector(".menu-footer");
   if (navMenu) {
-    let openGamesLobbyBtn = document.querySelector(".open-games-menu-loto");
+    // let openGamesLobbyBtn = document.querySelector(".open-games-menu-loto");
     let openLeadersMenuBtn = document.querySelector(".open-liders-menu");
     let openSettingsBtn = document.querySelector(".open-settings");
     let openProfileBtn = document.querySelector(".open-profile");
-    const navButtons = [
-      openGamesLobbyBtn,
-      openLeadersMenuBtn,
-      openSettingsBtn,
-      openProfileBtn,
-    ];
+    const navButtons = [openLeadersMenuBtn, openSettingsBtn, openProfileBtn];
 
     // открытие страници лидеров
     openLeadersMenuBtn.addEventListener("click", function () {
-      // ws.close();
-      // impLeadersFunc.openLeadersMenuPage();
       location.hash = "#leaders";
       navButtons.forEach((btn) => btn.classList.remove("active"));
       openLeadersMenuBtn.classList.add("active");
       impAudio.playRating();
     });
 
-    // открытие страницы с играми лото
-    openGamesLobbyBtn.addEventListener("click", function () {
-      let isCurrGameMenuPage = document.querySelector(".games");
-      if (!isCurrGameMenuPage) {
-        location.hash = "#";
-        redirectToMainPage();
-        ws.send(
-          JSON.stringify({
-            username: localUser.username,
-            userId: localUser.userId,
-            method: "getAllInfo",
-          })
-        );
+    // // открытие страницы с играми лото
+    // openGamesLobbyBtn.addEventListener("click", function () {
+    //   let isCurrGameMenuPage = document.querySelector(".games");
+    //   if (!isCurrGameMenuPage) {
+    //     location.hash = "#";
+    //     redirectToMainPage();
+    //     ws.send(
+    //       JSON.stringify({
+    //         username: localUser.username,
+    //         userId: localUser.userId,
+    //         method: "getAllInfo",
+    //       })
+    //     );
 
-        navButtons.forEach((btn) => btn.classList.remove("active"));
-        openGamesLobbyBtn.classList.add("active");
-      }
-    });
+    //     navButtons.forEach((btn) => btn.classList.remove("active"));
+    //     openGamesLobbyBtn.classList.add("active");
+    //   }
+    // });
 
     // открытие страницы с депозитом
     openSettingsBtn.addEventListener("click", async function () {
@@ -916,10 +909,7 @@ export function createPageNavBlock() {
          <div
            class="menu-footer__item menu-footer__main-item open-games-menu active"
          >
-         <div class="open-games__drop-menu ">
-            <div class="open-games__drop-menu-item open-games-menu-loto">Лото</div>
-            <div class="open-games__drop-menu-item open-games-menu-domino">Домино</div>
-          </div>
+        
          <img src="img/games.png" alt="">
          </div>
          <div class="menu-footer__item open-liders-menu"><img src="img/leaders.png" alt=""></div>
@@ -929,26 +919,26 @@ export function createPageNavBlock() {
    </div>
  </footer>`;
 
-    let menuButton = document.querySelector(".menu-footer__main-item");
-    let menuBlock = document.querySelector(".open-games__drop-menu");
+    // let menuButton = document.querySelector(".menu-footer__main-item");
+    // let menuBlock = document.querySelector(".open-games__drop-menu");
 
-    menuButton.addEventListener("click", function () {
-      if (menuBlock.classList.contains("opened")) {
-        menuBlock.classList.remove("opened");
-      } else {
-        menuBlock.classList.add("opened");
-      }
-    });
+    // menuButton.addEventListener("click", function () {
+    //   if (menuBlock.classList.contains("opened")) {
+    //     menuBlock.classList.remove("opened");
+    //   } else {
+    //     menuBlock.classList.add("opened");
+    //   }
+    // });
 
-    const openLotoMenu = document.querySelector(".open-games-menu-loto");
-    const openDominoMenu = document.querySelector(".open-games-menu-domino");
+    // const openLotoMenu = document.querySelector(".open-games-menu-loto");
+    const openGamesMenu = document.querySelector(".open-games-menu");
 
-    openLotoMenu.addEventListener("click", function () {
-      location.hash = "";
-    });
+    // openLotoMenu.addEventListener("click", function () {
+    //   location.hash = "";
+    // });
 
-    openDominoMenu.addEventListener("click", function () {
-      location.hash = "#domino-choose";
+    openGamesMenu.addEventListener("click", function () {
+      location.hash = "#gamemode-choose";
     });
   }
 }

@@ -206,3 +206,30 @@ th {
   margin-bottom: 5px;
   border-bottom: 0.5px solid #333;
 }
+
+.date-stats-domino-classic-table {
+  margin: 0 auto;
+  max-width: max-content;
+}
+
+.date-stats-domino-classic-table .date-stats-item,
+.date-stats-domino-classic-table .date-stats-header {
+  padding: 5px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  text-align: center;
+  column-gap: 20px;
+}
+
+.date-stats-domino-telephone-table {
+  margin: 0 auto;
+  max-width: max-content;
+}
+.date-stats-domino-telephone-table .date-stats-item,
+.date-stats-domino-telephone-table .date-stats-header {
+  padding: 5px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  text-align: center;
+  column-gap: 20px;
+}

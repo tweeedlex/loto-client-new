@@ -1,5 +1,6 @@
 import * as impHttp from "../http.js";
 import * as impPopup from "./popup.js";
+import * as impDominoNavigation from "../domino/domino-navigation.js";
 
 export function createAdminButton() {
   // create button in profile
@@ -359,13 +360,15 @@ export async function redirectToAdminPage() {
     <button style="margin-left: 10px;" class="addBotBtn admin-date-stats-submit">Подтвердить</button>
     <div class="date-stats-table-wrapper">
 
+    <h2>Лото</h2>
+
     <div class="date-stats-table">
       <div class="date-stats-header">
         <p class="date-stats-item bold">Ставка</p>
         <p class="date-stats-item bold">Количество билетов</p>
         <p class="date-stats-item bold">Собранная комиссия</p>
-        <p class="date-stats-item bold">Собрано в ходе игры</p>
-        <p class="date-stats-item bold">Собрано всего</p>
+        <p class="date-stats-item bold">Сколько выигрывали сумму М боты</p>
+        <p class="date-stats-item bold">Сколько билетов покупали боты</p>
       </div>
       
         <div class='date-stats-body'>
@@ -374,40 +377,120 @@ export async function redirectToAdminPage() {
             <p class="date-stats-field"><span class="date-stats-field-tickets">0</span></p>
             <p class="date-stats-field"><span class="date-stats-field-commision">0</span>₼</p>
             <p class="date-stats-field"><span class="date-stats-field-wonsum">0</span>₼</p>
-            <p class="date-stats-field"><span class="date-stats-field-totalwon">0</span>₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-botstickets">0</span></p>
           </div>
           <div class="date-stats-item date-stats-item-2">
             <p class="date-stats-field">0.50₼</p>
             <p class="date-stats-field"><span class="date-stats-field-tickets">0</span></p>
             <p class="date-stats-field"><span class="date-stats-field-commision">0</span>₼</p>
             <p class="date-stats-field"><span class="date-stats-field-wonsum">0</span>₼</p>
-            <p class="date-stats-field"><span class="date-stats-field-totalwon">0</span>₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-botstickets">0</span></p>
           </div>
           <div class="date-stats-item date-stats-item-3">
             <p class="date-stats-field">1.00₼</p>
             <p class="date-stats-field"><span class="date-stats-field-tickets">0</span></p>
             <p class="date-stats-field"><span class="date-stats-field-commision">0</span>₼</p>
             <p class="date-stats-field"><span class="date-stats-field-wonsum">0</span>₼</p>
-            <p class="date-stats-field"><span class="date-stats-field-totalwon">0</span>₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-botstickets">0</span></p>
           </div>
           <div class="date-stats-item date-stats-item-4">
             <p class="date-stats-field">5.00₼</p>
             <p class="date-stats-field"><span class="date-stats-field-tickets">0</span></p>
             <p class="date-stats-field"><span class="date-stats-field-commision">0</span>₼</p>
             <p class="date-stats-field"><span class="date-stats-field-wonsum">0</span>₼</p>
-            <p class="date-stats-field"><span class="date-stats-field-totalwon">0</span>₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-botstickets">0</span></p>
           </div>
           <div class="date-stats-item date-stats-item-5">
             <p class="date-stats-field">10.00₼</p>
             <p class="date-stats-field"><span class="date-stats-field-tickets">0</span></p>
             <p class="date-stats-field"><span class="date-stats-field-commision">0</span>₼</p>
             <p class="date-stats-field"><span class="date-stats-field-wonsum">0</span>₼</p>
-            <p class="date-stats-field"><span class="date-stats-field-totalwon">0</span>₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-botstickets">0</span></p>
           </div>
         </div>
       </div>
     </div>
-</div>
+    <div class="date-stats-table-wrapper">
+    <h2>Домино классик</h2>
+
+    <div class="date-stats-domino-classic-table">
+      <div class="date-stats-header">
+        <p class="date-stats-item bold">Ставка</p>
+        <p class="date-stats-item bold">Общее кол-во игроков</p>
+        <p class="date-stats-item bold">Собранная комиссия</p>
+      </div>
+      
+        <div class='date-stats-body-domino'>
+          <div class="date-stats-item date-stats-item-1">
+            <p class="date-stats-field">0.20₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-2">
+            <p class="date-stats-field">0.50₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-3">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-4">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-5">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="date-stats-table-wrapper">
+    <h2>Домино телефон</h2>
+
+    <div class="date-stats-domino-telephone-table">
+      <div class="date-stats-header">
+        <p class="date-stats-item bold">Ставка</p>
+        <p class="date-stats-item bold">Общее кол-во игроков</p>
+        <p class="date-stats-item bold">Собранная комиссия</p>
+      </div>
+      
+        <div class='date-stats-body-domino'>
+          <div class="date-stats-item date-stats-item-1">
+            <p class="date-stats-field">0.20₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-2">
+            <p class="date-stats-field">0.50₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-3">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-4">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+          <div class="date-stats-item date-stats-item-5">
+            <p class="date-stats-field">1.00₼</p>
+            <p class="date-stats-field"><span class="date-stats-field-players">0</span></p>
+            <p class="date-stats-field"><span class="date-stats-field-earned-commision">0</span>₼</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
 </section>
   `;
   await getAdminSettings();
@@ -516,10 +599,113 @@ async function addDateGamesFunctions() {
   const gamesData = await formDateGameData();
   insertDataInTable(gamesData);
 
+  const dominoGamesData = await formDateDominoGameData();
+  insertDominoDataInTables(dominoGamesData);
+
   submitDateButton.addEventListener("click", async () => {
     const gamesData = await formDateGameData();
     insertDataInTable(gamesData);
+
+    const dominoGamesData = await formDateDominoGameData();
+    insertDominoDataInTables(dominoGamesData);
   });
+
+  async function formDateDominoGameData() {
+    dateInput = document.querySelector(".admin-date-stats-input");
+    const date = dateInput.value;
+
+    const { data: playedGames } = await impHttp.getPlayedDominoGames();
+
+    const filteredGames = playedGames.filter((game) => {
+      const gameDate = new Date(game.createdAt).toISOString().slice(0, 10);
+      return gameDate == date;
+    });
+
+    const gamesData = {
+      CLASSIC: [
+        {
+          id: 1,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 2,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 3,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 4,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 5,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+      ],
+      TELEPHONE: [
+        {
+          id: 1,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 2,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 3,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 4,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+        {
+          id: 5,
+          playersAmount: 0,
+          commissionTwoPlayers: 0,
+          commissionFourPlayers: 0,
+        },
+      ],
+    };
+
+    filteredGames.forEach((filteredGame) => {
+      const roomId = filteredGame.roomId;
+      const gameData = gamesData[filteredGame.gameMode].find(
+        (game) => game.id == roomId
+      );
+      const { commission } = impDominoNavigation.getDominoRoomBetInfo(roomId);
+      gameData.playersAmount += 1;
+      if (filteredGame.playerMode == 2) {
+        gameData.commissionTwoPlayers += commission;
+      } else {
+        gameData.commissionFourPlayers += commission;
+      }
+    });
+
+    console.log(gamesData);
+
+    return gamesData;
+  }
 
   async function formDateGameData() {
     dateInput = document.querySelector(".admin-date-stats-input");
@@ -537,11 +723,11 @@ async function addDateGamesFunctions() {
     console.log(filteredGames);
 
     const gamesData = [
-      { id: 1, ticketsAmount: 0, commission: 0, wonByGame: 0 },
-      { id: 2, ticketsAmount: 0, commission: 0, wonByGame: 0 },
-      { id: 3, ticketsAmount: 0, commission: 0, wonByGame: 0 },
-      { id: 4, ticketsAmount: 0, commission: 0, wonByGame: 0 },
-      { id: 5, ticketsAmount: 0, commission: 0, wonByGame: 0 },
+      { id: 1, ticketsAmount: 0, commission: 0, wonByGame: 0, botsTickets: 0 },
+      { id: 2, ticketsAmount: 0, commission: 0, wonByGame: 0, botsTickets: 0 },
+      { id: 3, ticketsAmount: 0, commission: 0, wonByGame: 0, botsTickets: 0 },
+      { id: 4, ticketsAmount: 0, commission: 0, wonByGame: 0, botsTickets: 0 },
+      { id: 5, ticketsAmount: 0, commission: 0, wonByGame: 0, botsTickets: 0 },
     ];
 
     filteredGames.forEach((filteredGame) => {
@@ -551,13 +737,15 @@ async function addDateGamesFunctions() {
           isGameLost = false;
         }
         const roomId = getRoomIdByBet(userGame.bet);
-
         const gameData = gamesData.find((game) => game.id == roomId);
+
         let ticketsAmount = JSON.parse(userGame.tickets).length;
         gameData.ticketsAmount += ticketsAmount;
         const { commission } = getRoomCommisionInfo(roomId);
         gameData.commission += ticketsAmount * commission;
       });
+      const gameData = gamesData.find((game) => game.id == filteredGame.roomId);
+      gameData.botsTickets += filteredGame.lotoBotTickets;
 
       if (isGameLost) {
         filteredGame.usergames.forEach((userGame) => {
@@ -586,10 +774,28 @@ function insertDataInTable(gamesData) {
       gameData.commission.toFixed(2);
     item.querySelector(".date-stats-field-wonsum").innerHTML =
       gameData.wonByGame.toFixed(2);
-    item.querySelector(".date-stats-field-totalwon").innerHTML = (
-      gameData.wonByGame + gameData.commission
-    ).toFixed(2);
+    item.querySelector(".date-stats-field-botstickets").innerHTML =
+      gameData.botsTickets;
   });
+}
+
+function insertDominoDataInTables(gamesData) {
+  for (let i = 1; i <= 2; i++) {
+    let gameMode = i == 1 ? "CLASSIC" : "TELEPHONE";
+    const table = document.querySelector(
+      `.date-stats-domino-${gameMode.toLowerCase()}-table`
+    );
+    const tableBody = table.querySelector(".date-stats-body-domino");
+    const tableItems = tableBody.querySelectorAll(".date-stats-item");
+    tableItems.forEach((item) => {
+      const roomId = item.classList[1].split("-")[3];
+      const gameData = gamesData[gameMode].find((game) => game.id == roomId);
+      item.querySelector(".date-stats-field-players").innerHTML =
+        gameData.playersAmount;
+      item.querySelector(".date-stats-field-earned-commision").innerHTML =
+        gameData.commissionTwoPlayers.toFixed(2);
+    });
+  }
 }
 
 function getRoomIdByBet(bet) {

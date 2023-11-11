@@ -554,9 +554,9 @@ async function openWithdraw() {
       </div>
       <div class="withdraw-form__item">
         <label for="withdraw-form-sum">${siteLanguage.withdrawPage.cardSumText}</label>
-        <input id="withdraw-form-sum" type="tel" autocomplete = 'off'>
+        <input id="withdraw-form-sum"  maxlength="4" pattern="[0-9]{4}" max="1000" type="tel" autocomplete = 'off'>
       </div>
-      <p class="withdraw-form-p">${siteLanguage.withdrawPage.alertText}: 15₼</p>
+      <p class="withdraw-form-p">${siteLanguage.withdrawPage.alertText}: 20₼</p>
       <button class="withdraw-form__item-button">${siteLanguage.withdrawPage.withdrawButtonText}</button>
 
       <button class="go-back">
@@ -568,6 +568,16 @@ async function openWithdraw() {
   <div class="withdraw-page__footer"></div>
 </section>
   `;
+
+  const withdrawFormSum = document.querySelector("#withdraw-form-sum");
+  withdrawFormSum.addEventListener("input", () => {
+    // make 4 digits max and max value 1000
+    withdrawFormSum.value = withdrawFormSum.value.replace(/[^0-9]/g, "");
+    withdrawFormSum.value = withdrawFormSum.value.slice(0, 4);
+    if (withdrawFormSum.value > 1000) {
+      withdrawFormSum.value = 1000;
+    }
+  });
 
   const goBackButton = document.querySelector(".withdraw-page .go-back");
   goBackButton.addEventListener("click", function (e) {
@@ -652,8 +662,8 @@ async function openWithdraw() {
     const withdrawInput = document.querySelector("#withdraw-form-sum");
     let withdrawAmount = withdrawInput.value;
 
-    if (withdrawAmount < 15) {
-      impPopup.openErorPopup(`${siteLanguage.withdrawPage.alertText} 15₼`);
+    if (withdrawAmount < 20) {
+      impPopup.openErorPopup(`${siteLanguage.withdrawPage.alertText} 20₼`);
       return;
     }
 
@@ -941,9 +951,9 @@ async function openUserGames() {
   let siteLanguage = window.siteLanguage;
   let main = document.querySelector(".main__container");
   if (main) {
-    const {data} = await impHttp.getUserGames();
-    const {lotoGames, dominoGames} = data;
-    console.log(data, lotoGames)
+    const { data } = await impHttp.getUserGames();
+    const { lotoGames, dominoGames } = data;
+    console.log(data, lotoGames);
     main.innerHTML = `
       <div class="main__container">
         <section class="user-game-history">
@@ -982,7 +992,7 @@ async function openUserGames() {
         `${game.isWinner ? "won" : "lose"}`,
         `game-item-${index}`
       );
-      gameitem.setAttribute("date", game.createdAt)
+      gameitem.setAttribute("date", game.createdAt);
       gameitem.innerHTML = `
         <div class="game-item__tickets-block">
           <!-- tickets -->
@@ -1040,10 +1050,7 @@ async function openUserGames() {
         ".game-item__tickets-block"
       );
       if (ticketsBodyBlock) {
-        createHistoryUserTickets(
-          ticketsBodyBlock,
-          lotoGames[index].tickets
-        );
+        createHistoryUserTickets(ticketsBodyBlock, lotoGames[index].tickets);
       }
 
       // убираем навигацию сайта
@@ -1062,7 +1069,7 @@ async function openUserGames() {
         `${game.isWinner ? "won" : "lose"}`,
         `game-item-${index}`
       );
-      gameitem.setAttribute("date", game.createdAt)
+      gameitem.setAttribute("date", game.createdAt);
 
       gameitem.innerHTML = `
         <p>Домино</p>
@@ -1072,21 +1079,22 @@ async function openUserGames() {
         <p>Стол: ${game.tableId}</p>
         <p>Количество игроков: ${game.playerMode}</p>
         <p>Режим: ${game.gameMode == "CLASSIC" ? "классический" : "телефон"}</p>
-      `
+      `;
 
       mainBlock.insertBefore(gameitem, mainBlock.firstChild);
-    })
+    });
 
     // sort all games by date
     let games = document.querySelectorAll(".game-item");
     games = [...games];
     games.sort((a, b) => {
-      return new Date(b.getAttribute("date")) - new Date(a.getAttribute("date"));
+      return (
+        new Date(b.getAttribute("date")) - new Date(a.getAttribute("date"))
+      );
     });
     games.forEach((game) => {
       mainBlock.appendChild(game);
     });
-    
   }
 }
 
@@ -1149,7 +1157,7 @@ async function openUserBonuses() {
       <div class="change-tokens-page-form__block">
         <div class="change-tokens-page-form__block-row">
           <p>${siteLanguage.profilePage.bonusesPage.pointToChangeText}</p>
-          <input type="number" />
+          <input type="number" max="9999" maxlength="4" pattern="[0-9]{4}" class="change-tokens-input" />
         </div>
         <div class="change-tokens-page-form__block-row">
           <div class="get-sum-block">  <p>${siteLanguage.profilePage.bonusesPage.pointToGetText}:</p>
@@ -1169,6 +1177,13 @@ async function openUserBonuses() {
   </div>
 </div>
   `;
+
+  const changeTokensInput = document.querySelector(".change-tokens-input");
+  changeTokensInput.addEventListener("input", () => {
+    // make 4 digits max
+    changeTokensInput.value = changeTokensInput.value.replace(/[^0-9]/g, "");
+    changeTokensInput.value = changeTokensInput.value.slice(0, 4);
+  });
 
   const exitButton = document.querySelector(".change-tokens-page__exit-button");
   exitButton.addEventListener("click", function () {

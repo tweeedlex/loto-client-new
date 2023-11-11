@@ -321,6 +321,10 @@ export const connectWebsocketFunctions = () => {
         impDominoNav.addOnlineToTable(msg);
         impDominoNav.startTableTimer(msg);
 
+        // impPopup.openDominoLoseGame([{ userId: 2, username: "bebra" }], []);
+
+        // impPopup.openDominoWinGame([{ userId: 1, username: "2voby" }]);
+
         let user = localStorage.getItem("user");
         user = JSON.parse(user);
         if (msg.userId == user.userId) {
@@ -626,7 +630,7 @@ export const connectWebsocketFunctions = () => {
             break;
 
           case "mainDominoPage":
-            location.hash = "#domino-choose";
+            location.hash = "#gamemode-choose";
             break;
 
           case "dominoTelephonePage":
@@ -659,7 +663,7 @@ export const connectWebsocketFunctions = () => {
           break;
 
         case "mainDominoPage":
-          location.hash = "#domino-choose";
+          location.hash = "#gamemode-choose";
           break;
         default:
           location.hash = "#";

@@ -433,6 +433,16 @@ export async function getPlayedGames() {
   }
 }
 
+export async function getPlayedDominoGames() {
+  try {
+    const response = await $api.get(`/played-domino-games`);
+    return await response;
+  } catch (e) {
+    console.log(e.response);
+    return await e.response;
+  }
+}
+
 export async function getDominoStatus() {
   try {
     const response = await $api.get("/game/domino-status");

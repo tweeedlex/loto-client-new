@@ -229,7 +229,25 @@
       "connectionErrorText": "Ошибка подключения к интернету!",
       "registrationError": "Произошла ошибка! Проверьте введенные данные и попробуйте еще раз!",
       "registrationSuccess": "Аккаунт создан, войдите в него",
-      "usernameExists": "Акаунт с таким именем уже существует!"
+      "usernameExists": "Акаунт с таким именем уже существует!",
+      "connectionError": "Ошибка подключения",
+      "notEnoughMoneyBalance": "Недостаточно средств на балансе",
+      "findingPlayers": "Идет подбор игроков...",
+      "leaveRoom": "Выйти из комнаты",
+      "leaveToGameMenu": "Выйти в меню игр",
+      "startGameWaiting": "Ожидание начала игры...",
+      "gameFinished": "Игра закончилась",
+      "winners": "Победитель",
+      "youLost": "К сожалению, вы проиграли",
+      "youLostMorePoints": "Вы проиграли потому что у вас больше очков.",
+      "youLostPoints": "Вы проиграли, ваш противник набрал 165 очков.",
+      "tiles": "Костяшки:",
+      "tilesEnded": "Костяшки закончились",
+      "gameFinishedWait": "Игра окончена, ожидайде ее сброса!",
+      "roundResults": "Результаты раунда:",
+      "rules": "Правила",
+      "gotIt": "Понятно",
+      "dominoRules": "*Правила игры*"
     },
     "words": {
       "yes": "да",
@@ -237,6 +255,34 @@
       "understood": "понятно",
       "ok": "OK",
       "reload": "Перезагрузить"
+    },
+    "dominoGame": {
+      "turnSkipped": "Ход пропущен!",
+      "autoTurn": "Авто-ход!"
+    },
+    "chooseModeMenu": {
+      "loto": "Лото",
+      "dominoClassic": "Домино класик",
+      "dominoTelephone": "Домино телефон",
+      "backgammon": "Нарды",
+      "earnPoints": "+ набери очки",
+      "players": "игроков"
+    },
+    "dominoRoomsMenu": {
+      "domino": "Домино:",
+      "classic": "Классическая",
+      "telephone": "Телефон",
+      "gameDuration": "Длительность игры: 5 минут",
+      "table": "Стол",
+      "players": "Игроков:",
+      "seconds": "сек",
+      "fourPlayers": "4 игрока",
+      "twoPlayers": "2 игрока",
+      "gameGoing": "Игра идет",
+      "points": "Очки:"
+    },
+    "dominoTable": {
+      "market": "Базар"
     },
     "dominoPhrases": {
       "phrase1": "Привет!",
@@ -496,7 +542,25 @@
       "connectionErrorText": "İnternet bağlantısı xətası!",
       "registrationError": "Xəta baş verdi! Daxil edilmiş məlumatları yoxlayın və yenidən cəhd edin!",
       "registrationSuccess": "Hesab yaradıldı, daxil olun",
-      "usernameExists": "Bu adda hesab artıq mövcuddur!"
+      "usernameExists": "Bu adda hesab artıq mövcuddur!",
+      "connectionError": "Ошибка подключения",
+      "notEnoughMoneyBalance": "Недостаточно средств на балансе",
+      "findingPlayers": "Идет подбор игроков...",
+      "leaveRoom": "Выйти из комнаты",
+      "leaveToGameMenu": "Выйти в меню игр",
+      "startGameWaiting": "Ожидание начала игры...",
+      "gameFinished": "Игра закончилась",
+      "winners": "Победитель:",
+      "youLost": "К сожалению, вы проиграли",
+      "youLostMorePoints": "Вы проиграли потому что у вас больше очков.",
+      "youLostPoints": "Вы проиграли, ваш противник набрал 165 очков.",
+      "tiles": "Костяшки:",
+      "tilesEnded": "Костяшки закончились",
+      "gameFinishedWait": "Игра окончена, ожидайде ее сброса!",
+      "roundResults": "Результаты раунда:",
+      "rules": "Правила",
+      "gotIt": "Понятно",
+      "dominoRules": "*Правила игры*"
     },
     "words": {
       "yes": "Bəli",
@@ -504,6 +568,34 @@
       "understood": "Aydındır",
       "ok": "OK",
       "reload": "Yenidən başladın"
+    },
+    "dominoGame": {
+      "turnSkipped": "Ход пропущен!",
+      "autoTurn": "Авто-ход!"
+    },
+    "chooseModeMenu": {
+      "loto": "Лото",
+      "dominoClassic": "Домино класик",
+      "dominoTelephone": "Домино телефон",
+      "backgammon": "Нарды",
+      "earnPoints": "+ набери очки",
+      "players": "игроков"
+    },
+    "dominoRoomsMenu": {
+      "domino": "Домино:",
+      "classic": "Классическая",
+      "telephone": "Телефон",
+      "gameDuration": "Длительность игры: 5 минут",
+      "table": "Стол",
+      "players": "Игроков:",
+      "seconds": "сек",
+      "fourPlayers": "4 игрока",
+      "twoPlayers": "2 игрока",
+      "gameGoing": "Игра идет",
+      "points": "Очки:"
+    },
+    "dominoTable": {
+      "market": "Базар"
     },
     "dominoPhrases": {
       "phrase1": "Привет!",
@@ -763,7 +855,25 @@
       "connectionErrorText": "Internet connection error!",
       "registrationError": "An error occurred! Check the entered data and try again!",
       "registrationSuccess": "Account created, log in",
-      "usernameExists": "An account with that name already exists!"
+      "usernameExists": "An account with that name already exists!",
+      "connectionError": "Ошибка подключения",
+      "notEnoughMoneyBalance": "Недостаточно средств на балансе",
+      "findingPlayers": "Идет подбор игроков...",
+      "leaveRoom": "Выйти из комнаты",
+      "leaveToGameMenu": "Выйти в меню игр",
+      "startGameWaiting": "Ожидание начала игры...",
+      "gameFinished": "Игра закончилась",
+      "winners": "Победитель:",
+      "youLost": "К сожалению, вы проиграли",
+      "youLostMorePoints": "Вы проиграли потому что у вас больше очков.",
+      "youLostPoints": "Вы проиграли, ваш противник набрал 165 очков.",
+      "tiles": "Костяшки:",
+      "tilesEnded": "Костяшки закончились",
+      "gameFinishedWait": "Игра окончена, ожидайде ее сброса!",
+      "roundResults": "Результаты раунда:",
+      "rules": "Правила",
+      "gotIt": "Понятно",
+      "dominoRules": "*Правила игры*"
     },
     "words": {
       "yes": "Yes",
@@ -771,6 +881,34 @@
       "understood": "got it",
       "ok": "OK",
       "reload": "Reload"
+    },
+    "dominoGame": {
+      "turnSkipped": "Ход пропущен!",
+      "autoTurn": "Авто-ход!"
+    },
+    "chooseModeMenu": {
+      "loto": "Лото",
+      "dominoClassic": "Домино класик",
+      "dominoTelephone": "Домино телефон",
+      "backgammon": "Нарды",
+      "earnPoints": "+ набери очки",
+      "players": "игроков"
+    },
+    "dominoRoomsMenu": {
+      "domino": "Домино:",
+      "classic": "Классическая",
+      "telephone": "Телефон",
+      "gameDuration": "Длительность игры: 5 минут",
+      "table": "Стол",
+      "players": "Игроков:",
+      "seconds": "сек",
+      "fourPlayers": "4 игрока",
+      "twoPlayers": "2 игрока",
+      "gameGoing": "Игра идет",
+      "points": "Очки:"
+    },
+    "dominoTable": {
+      "market": "Базар"
     },
     "dominoPhrases": {
       "phrase1": "Привет!",
@@ -1030,7 +1168,25 @@
       "connectionErrorText": "Помилка підключення до інтернету!",
       "registrationError": "Виникла помилка! Перевірте введені дані та повторіть спробу!",
       "registrationSuccess": "Акаунт створено, увійдіть",
-      "usernameExists": "Акаунт із таким ім'ям користувача вже існує!"
+      "usernameExists": "Акаунт із таким ім'ям користувача вже існує!",
+      "connectionError": "Ошибка подключения",
+      "notEnoughMoneyBalance": "Недостаточно средств на балансе",
+      "findingPlayers": "Идет подбор игроков...",
+      "leaveRoom": "Выйти из комнаты",
+      "leaveToGameMenu": "Выйти в меню игр",
+      "startGameWaiting": "Ожидание начала игры...",
+      "gameFinished": "Игра закончилась",
+      "winners": "Победитель:",
+      "youLost": "К сожалению, вы проиграли",
+      "youLostMorePoints": "Вы проиграли потому что у вас больше очков.",
+      "youLostPoints": "Вы проиграли, ваш противник набрал 165 очков.",
+      "tiles": "Костяшки:",
+      "tilesEnded": "Костяшки закончились",
+      "gameFinishedWait": "Игра окончена, ожидайде ее сброса!",
+      "roundResults": "Результаты раунда:",
+      "rules": "Правила",
+      "gotIt": "Понятно",
+      "dominoRules": "*Правила игры*"
     },
     "words": {
       "yes": "Так",
@@ -1038,6 +1194,34 @@
       "understood": "Зрозуміло",
       "ok": "OK",
       "reload": "Перезавантажити"
+    },
+    "dominoGame": {
+      "turnSkipped": "Ход пропущен!",
+      "autoTurn": "Авто-ход!"
+    },
+    "chooseModeMenu": {
+      "loto": "Лото",
+      "dominoClassic": "Домино класик",
+      "dominoTelephone": "Домино телефон",
+      "backgammon": "Нарды",
+      "earnPoints": "+ набери очки",
+      "players": "игроков"
+    },
+    "dominoRoomsMenu": {
+      "domino": "Домино:",
+      "classic": "Классическая",
+      "telephone": "Телефон",
+      "gameDuration": "Длительность игры: 5 минут",
+      "table": "Стол",
+      "players": "Игроков:",
+      "seconds": "сек",
+      "fourPlayers": "4 игрока",
+      "twoPlayers": "2 игрока",
+      "gameGoing": "Игра идет",
+      "points": "Очки:"
+    },
+    "dominoTable": {
+      "market": "Базар"
     },
     "dominoPhrases": {
       "phrase1": "Привет!",
@@ -1296,7 +1480,25 @@
       "connectionErrorText": "İnternet bağlantısı hatası!",
       "registrationError": "Bir hata oluştu! Girilen verileri kontrol edin ve tekrar deneyin!",
       "registrationSuccess": "Hesap oluşturuldu, giriş yapın",
-      "usernameExists": "Bu isimde bir hesap zaten mevcut!"
+      "usernameExists": "Bu isimde bir hesap zaten mevcut!",
+      "connectionError": "Ошибка подключения",
+      "notEnoughMoneyBalance": "Недостаточно средств на балансе",
+      "findingPlayers": "Идет подбор игроков...",
+      "leaveRoom": "Выйти из комнаты",
+      "leaveToGameMenu": "Выйти в меню игр",
+      "startGameWaiting": "Ожидание начала игры...",
+      "gameFinished": "Игра закончилась",
+      "winners": "Победитель:",
+      "youLost": "К сожалению, вы проиграли",
+      "youLostMorePoints": "Вы проиграли потому что у вас больше очков.",
+      "youLostPoints": "Вы проиграли, ваш противник набрал 165 очков.",
+      "tiles": "Костяшки:",
+      "tilesEnded": "Костяшки закончились",
+      "gameFinishedWait": "Игра окончена, ожидайде ее сброса!",
+      "roundResults": "Результаты раунда:",
+      "rules": "Правила",
+      "gotIt": "Понятно",
+      "dominoRules": "*Правила игры*"
     },
     "words": {
       "yes": "Evet",
@@ -1304,6 +1506,34 @@
       "understood": "Apaçık",
       "ok": "OK",
       "reload": "Yeniden başlat"
+    },
+    "dominoGame": {
+      "turnSkipped": "Ход пропущен!",
+      "autoTurn": "Авто-ход!"
+    },
+    "chooseModeMenu": {
+      "loto": "Лото",
+      "dominoClassic": "Домино класик",
+      "dominoTelephone": "Домино телефон",
+      "backgammon": "Нарды",
+      "earnPoints": "+ набери очки",
+      "players": "игроков"
+    },
+    "dominoRoomsMenu": {
+      "domino": "Домино:",
+      "classic": "Классическая",
+      "telephone": "Телефон",
+      "gameDuration": "Длительность игры: 5 минут",
+      "table": "Стол",
+      "players": "Игроков:",
+      "seconds": "сек",
+      "fourPlayers": "4 игрока",
+      "twoPlayers": "2 игрока",
+      "gameGoing": "Игра идет",
+      "points": "Очки:"
+    },
+    "dominoTable": {
+      "market": "Базар"
     },
     "dominoPhrases": {
       "phrase1": "Привет!",

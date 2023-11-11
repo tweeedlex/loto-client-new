@@ -405,10 +405,14 @@ function formTwoPlayersMenu(main, main__container, ws, gameMode) {
   main__container.appendChild(gamesBlock);
   main.appendChild(main__container);
 
-  let dominoRulesButton = document.querySelector(".domino-room-header__rules");
-  if (dominoRulesButton) {
-    dominoRulesButton.addEventListener("click", function () {
-      impPopup.openRulesInfoPopup();
+  let dominoRulesButtons = document.querySelectorAll(
+    ".domino-room-header__rules"
+  );
+  if (dominoRulesButtons) {
+    dominoRulesButtons.forEach((dominoRulesButton) => {
+      dominoRulesButton.addEventListener("click", function () {
+        impPopup.openRulesInfoPopup();
+      });
     });
   }
   addDominoListeners(ws);
@@ -512,10 +516,14 @@ function formFourPlayersMenu(main, main__container, ws, gameMode) {
   main__container.appendChild(gamesBlock);
   main.appendChild(main__container);
 
-  let dominoRulesButton = document.querySelector(".domino-room-header__rules");
-  if (dominoRulesButton) {
-    dominoRulesButton.addEventListener("click", function () {
-      impPopup.openRulesInfoPopup();
+  let dominoRulesButtons = document.querySelectorAll(
+    ".domino-room-header__rules"
+  );
+  if (dominoRulesButtons) {
+    dominoRulesButtons.forEach((dominoRulesButton) => {
+      dominoRulesButton.addEventListener("click", function () {
+        impPopup.openRulesInfoPopup();
+      });
     });
   }
 

@@ -8,6 +8,7 @@ import * as impMoveElement from "./modules/move-element.js";
 import * as impLocalization from "./modules/localize.js";
 import * as impPopup from "./modules/pages/popup.js";
 import * as impDominoGame from "./modules/domino/domino-game.js";
+import * as impDominoNav from "./modules/domino/domino-navigation.js";
 window.ws = null;
 // impDominoGame.tablePlacement();
 
@@ -39,6 +40,17 @@ if (await impAuth.isAuth()) {
 
   impNav.addListeners(ws);
   // preloader.classList.add("d-none");
+
+  location.hash = "#gamemode-choose";
+  let navMenu = document.querySelector(".menu-footer");
+  if (navMenu) {
+    const navButtons = navMenu.querySelectorAll(".active");
+    navButtons.forEach((button) => button.classList.remove("active"));
+    let openGamesLobbyBtn = document.querySelector(".open-games-menu");
+    openGamesLobbyBtn.classList.add("active");
+  }
+
+  impDominoNav.openDominoChoosePage();
 }
 
 // розблокировать чат после f5 а то он будет заблочен

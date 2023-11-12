@@ -176,7 +176,7 @@ const drawTelephoneGameScene = (scene, player = null) => {
     block3tiles[block3tiles.length - 1].id >= 0
   ) {
     if (block3tiles[block3tiles.length - 1].central == true) {
-      expand = { fromBlock: 3, toBlock: 4, left: true, right: false };
+      expand = { fromBlock: 3, toBlock: 4, left: false, right: false };
     }
     for (let i = 0; i < 2; i++) {
       block4tiles.unshift(block3tiles[block3tiles.length - 1]);
@@ -187,7 +187,7 @@ const drawTelephoneGameScene = (scene, player = null) => {
   // если в 3 блоке перв тайл двойной, перекинуть 2 тайла в 2 блок
   if (block3tiles[0].left == block3tiles[0].right && block3tiles[0].id >= 0) {
     if (block3tiles[0].central == true) {
-      expand = { fromBlock: 3, toBlock: 2, left: false, right: true };
+      expand = { fromBlock: 3, toBlock: 2, left: false, right: false };
     }
     for (let i = 0; i < 2; i++) {
       block2tiles.push(block3tiles[0]);
@@ -230,7 +230,7 @@ const drawTelephoneGameScene = (scene, player = null) => {
     !isBlock3Vertical
   ) {
     if (block4tiles[block4tiles.length - 1].central == true) {
-      expand = { fromBlock: 4, toBlock: 5, left: true, right: false };
+      expand = { fromBlock: 4, toBlock: 5, left: false, right: false };
     }
 
     for (let i = 0; i < 2; i++) {
@@ -274,7 +274,7 @@ const drawTelephoneGameScene = (scene, player = null) => {
     !isBlock3Vertical
   ) {
     if (block2tiles[0].central == true) {
-      expand = { fromBlock: 2, toBlock: 1, left: false, right: true };
+      expand = { fromBlock: 2, toBlock: 1, left: false, right: false };
     }
     for (let i = 0; i < 2; i++) {
       block1tiles.push(block2tiles[0]);
@@ -2174,6 +2174,7 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
             corner.value == left ||
             (corner.value == right && corner !== left && corner !== right)
           ) {
+            console.log(corner);
             sisterCorners.push(corner);
           }
         });
@@ -2182,6 +2183,8 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
 
         if (sisterCorners.length > 1 && tilesAmount > 1) {
           tile.classList.add("sister-highlight");
+
+          console.log(sisterCorners);
 
           addTelephoneSisterEventListeners(
             { left, right, id },
@@ -2286,12 +2289,43 @@ const addTelephoneSisterEventListeners = (
       `.domino-game-table__tile[tileid="${corner.id}"]`
     );
     if (sisterTileElement) {
-      sisterTileElement.classList.add("highlight");
-      const clickHandler = telephoneSisterTilesListener(
-        sisterTile,
-        sisterTileElement
-      );
-      sisterTileElement.addEventListener("click", clickHandler);
+      // check if sisterTileElement is double and contains class central
+      const sisterTileLeft = +sisterTileElement
+        .querySelector(".domino-game-table__tile-half:first-child")
+        .classList[1].split("-")[3];
+
+      const sisterTileRight = +sisterTileElement
+        .querySelector(".domino-game-table__tile-half:last-child")
+        .classList[1].split("-")[3];
+
+      const isTileAvailable = true;
+
+      if (sisterTileLeft == sisterTileRight) {
+        // get tiles that are on the left and on the right of sisterTileElement in scene
+        const scene = JSON.parse(localStorage.getItem("dominoGameScene"));
+        const middleRow = scene[Math.floor(scene.length / 2)];
+        const leftTile = middleRow[middleRow.indexOf(corner) - 1];
+        const rightTile = middleRow[middleRow.indexOf(corner) + 1];
+
+        if (
+          leftTile &&
+          rightTile &&
+          leftTile?.id >= 0 &&
+          rightTile?.id >= 0 &&
+          !sisterTileElement.classList.contains("central")
+        ) {
+          isTileAvailable = false;
+        }
+      }
+      if (isTileAvailable) {
+        sisterTileElement.classList.add("highlight");
+        const clickHandler = telephoneSisterTilesListener(
+          sisterTile,
+          sisterTileElement
+        );
+
+        sisterTileElement.addEventListener("click", clickHandler);
+      }
     }
   });
 };

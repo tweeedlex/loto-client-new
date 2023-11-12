@@ -426,7 +426,7 @@ async function openDeposit() {
         <div class="deposit__form-money">
           <h2>${siteLanguage.depositPage.depositSumText}: </h2>
           <div class="deposit__form-content">
-            <input class="deposit__form-sum" placeholder="0" type="number" />
+            <input class="deposit__form-sum" placeholder="0" type="number"  />
             <span>₼</span>
             <div class="deposit__form-ready-sums">
               <button class="deposit__form-ready-sum">
@@ -467,6 +467,11 @@ async function openDeposit() {
   const dollarRate = currencyRate.data.rate || 1.705;
 
   const sumInput = document.querySelector(".deposit__form-sum");
+
+  sumInput.addEventListener("input", () => {
+    sumInput.value = sumInput.value.replace(/[^0-9]/g, "");
+    sumInput.value = sumInput.value.slice(0, 4);
+  });
 
   const readySumButtons = document.querySelectorAll(".deposit__form-ready-sum");
 

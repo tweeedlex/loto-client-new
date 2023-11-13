@@ -887,7 +887,7 @@
 .domino-starting-popup,
 .domino-waiting-popup {
   width: 600px;
-  height: 300px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -933,10 +933,10 @@
 .domino-waiting-popup__button {
   display: flex;
   width: 175px;
-  height: 30px;
+  height: 50px;
   padding: 3px 10px;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   flex-shrink: 0;
   border-radius: 10px;
   background: linear-gradient(180deg, #78010b 0%, #d32433 100%);
@@ -952,6 +952,13 @@
 .domino-finishedGameAlert-popup {
   position: relative;
   padding-top: 50px;
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    #572451 0%,
+    rgba(71, 100, 204, 0.64) 100%
+  );
+  color: #fff;
 }
 .domino-finishedGameAlert-popup .preloader {
   position: absolute;
@@ -962,56 +969,6 @@
 
 .domino-finishedGameAlert-popup__text {
 }
-
-/* game chat popups  */
-
-/* .phrase-popup__content .popup__close {
-  margin: -25px -25px 0 0;
-}
-
-.phrase-popup__content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-
-.phrase-popup__content.blocked .phrase-popup__item {
-  make darker
-  background-color: #ddd;
-}
-
-.phrase-popup__item {
-  width: calc(50% - 5px);
-  padding: 10px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  border: 2px solid #dac767;
-  border-radius: 10px;
-}
-
-.emoji-popup__content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  flex-direction: row;
-}
-
-.emoji-popup__content .popup__close {
-  margin: -25px -25px 0 0;
-}
-.emoji-popup__content.blocked .emoji-popup__item {
-  make darker
-  filter: brightness(0.75) opacity(0.75);
-}
-
-.emoji-popup__item {
-  width: 64px;
-} */
 
 .phrase-popup__content .popup__close {
   margin: -25px -25px 0 0;
@@ -1114,6 +1071,16 @@
 
 /* domino win popup */
 
+.domino-win-popup {
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    #572451 0%,
+    rgba(71, 100, 204, 0.64) 100%
+  );
+  color: #fff;
+}
+
 .domino-win-popup__img {
   max-width: 200px;
   height: 117px;
@@ -1124,7 +1091,7 @@
 }
 
 .domino-win-popup__title {
-  color: #000;
+  /* color: #000; */
   text-align: center;
 
   font-size: 20px;
@@ -1134,7 +1101,7 @@
 }
 
 .domino-win-popup__winners-text {
-  color: #000;
+  /* color: #000; */
   text-align: center;
   font-size: 16px;
   font-style: normal;
@@ -1154,8 +1121,33 @@
 }
 
 /* lose popup */
+.telephone-finish-popup .popup__content {
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    #572451 0%,
+    rgba(71, 100, 204, 0.64) 100%
+  );
+  color: #fff;
+}
+
+.telephone-finish-popup .telephone-finish-username,
+.telephone-finish-popup .domino-lose-popup-score,
+.domino-lose-popup-scor {
+  color: #ffd900 !important;
+}
+
+.domino-lose-popup {
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    #572451 0%,
+    rgba(71, 100, 204, 0.64) 100%
+  );
+  color: #fff;
+}
 .domino-lose-popup__title {
-  color: #000;
+  /* color: #000; */
   text-align: center;
 
   font-size: 20px;
@@ -1165,7 +1157,7 @@
 }
 
 .domino-lose-popup__winners-text {
-  color: #000;
+  /* color: #000; */
   text-align: center;
   font-size: 16px;
   font-style: normal;

@@ -48,6 +48,63 @@ export function translateMainPage() {
   }
 }
 
+export function translateGameChooseMenu() {
+  let siteLanguage = window.siteLanguage;
+  let mainPage = document.querySelector(".domino-choose");
+  if (mainPage) {
+    let lotoButton = mainPage.querySelector(".mode-item__button.mode-loto");
+    if (lotoButton) {
+      lotoButton.innerHTML = siteLanguage.chooseModeMenu.loto;
+    }
+    let domnioClassicButton = mainPage.querySelector(
+      ".mode-item__button.mode-dom-classic"
+    );
+    if (domnioClassicButton) {
+      domnioClassicButton.innerHTML = siteLanguage.chooseModeMenu.dominoClassic;
+    }
+    let dominoClassicText = mainPage.querySelector(
+      ".choose-mode__item.classic .mode-item__info.game-info"
+    );
+    if (dominoClassicText) {
+      dominoClassicText.innerHTML = siteLanguage.chooseModeMenu.dominoClassic;
+    }
+    let domnioTelephoneButton = mainPage.querySelector(
+      ".mode-item__button.mode-dom-telephone"
+    );
+    if (domnioTelephoneButton) {
+      domnioTelephoneButton.innerHTML =
+        siteLanguage.chooseModeMenu.dominoTelephone;
+    }
+    let dominoTelephoneText = mainPage.querySelector(
+      ".choose-mode__item.telephone .mode-item__info.game-info"
+    );
+    if (dominoTelephoneText) {
+      dominoTelephoneText.innerHTML = siteLanguage.chooseModeMenu.earnPoints;
+    }
+
+    let dominoesPlayersInfo = mainPage.querySelectorAll(
+      ".mode-item__info.players-info"
+    );
+    dominoesPlayersInfo.forEach((info) => {
+      info.innerHTML = `<p>2/4</p> <p>${siteLanguage.chooseModeMenu.players}</p>`;
+    });
+    // domino-choose__button choose-mode__item mode-item classic
+    let backgammonButton = mainPage.querySelector(
+      ".mode-item__button.mode-dom-backgammons"
+    );
+    if (backgammonButton) {
+      backgammonButton.innerHTML = siteLanguage.chooseModeMenu.backgammon;
+    }
+    let backgammonChampButton = mainPage.querySelector(
+      ".mode-item__button.mode-dom-backgammons-champ"
+    );
+    if (backgammonChampButton) {
+      backgammonChampButton.innerHTML =
+        siteLanguage.chooseModeMenu.backgammonSuper;
+    }
+  }
+}
+
 export function translateProfilePage() {
   let siteLanguage = window.siteLanguage;
   let profilePage = document.querySelector(".profile-page");

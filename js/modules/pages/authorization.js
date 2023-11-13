@@ -1,10 +1,12 @@
 import * as impHttpRequests from "../http.js";
 import * as impInterface from "../authinterface.js";
 import * as impNav from "../navigation.js";
+import * as impDominoNav from "../../modules/domino/domino-navigation.js";
 // import * as impLotoNav from "./loto-navigation.js";
 import * as impWSNavigation from "../ws-navigation.js";
 import * as impAdminNav from "./admin-navigation.js";
 import * as impPopup from "./popup.js";
+import * as impLocalization from "../localize.js";
 
 export function registrationForm() {
   // let openFormButtons = document.querySelectorAll(".open-registration");
@@ -265,7 +267,12 @@ export function createLoginForm() {
         let ws = impWSNavigation.connectWebsocketFunctions();
         impNav.addHashListeners(ws);
         // impNav.addHashListenersWS(ws);
-        impNav.addListeners(ws);
+        // impNav.addListeners(ws);
+        // impNav.addListeners(ws);
+        location.hash = "#gamemode-choose";
+        impDominoNav.dominoChoosePageListeners();
+        impLocalization.translateGameChooseMenu();
+
         impNav.pageNavigation(ws);
         // проверка на активные игры в лото в даный момент
 

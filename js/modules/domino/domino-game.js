@@ -72,11 +72,6 @@ export const setDominoTableInfo = (msg) => {
 };
 
 export const updateGameScene = (scene, player) => {
-  // console.log("SCENE:", scene);
-  // let currClientGameScene = localStorage.getItem("dominoGameScene");
-  // if (currClientGameScene) {
-  //   currClientGameScene = JSON.parse(currClientGameScene);
-  // }
   impAudio.playPlaceTile();
   localStorage.setItem("dominoGameScene", JSON.stringify(scene));
 
@@ -169,30 +164,31 @@ const drawTelephoneGameScene = (scene, player = null) => {
 
   let expand = null;
 
-  // если в 3 блоке последний тайл двойной, перекинуть 2 тайла в 4 блок
+  // если в 3 блоке последний тайл двойной, перекинуть 1 из 4 блока
   if (
     block3tiles[block3tiles.length - 1].left ==
       block3tiles[block3tiles.length - 1].right &&
     block3tiles[block3tiles.length - 1].id >= 0
   ) {
     if (block3tiles[block3tiles.length - 1].central == true) {
-      expand = { fromBlock: 3, toBlock: 4, left: false, right: false };
+      expand = { fromBlock: 4, toBlock: 3, left: false, right: true };
     }
-    for (let i = 0; i < 2; i++) {
-      block4tiles.unshift(block3tiles[block3tiles.length - 1]);
-      block3tiles.pop();
-    }
+
+    block3tiles.push(block4tiles[0]);
+    block4tiles.shift();
+
+    block4tiles.push(block5tiles[0]);
+    block5tiles.shift();
   }
 
-  // если в 3 блоке перв тайл двойной, перекинуть 2 тайла в 2 блок
+  // если в 3 блоке перв тайл двойной, перекинуть тайл из 2 блока и из 1 блока в 2
   if (block3tiles[0].left == block3tiles[0].right && block3tiles[0].id >= 0) {
     if (block3tiles[0].central == true) {
-      expand = { fromBlock: 3, toBlock: 2, left: false, right: false };
+      expand = { fromBlock: 2, toBlock: 3, left: false, right: false };
     }
-    for (let i = 0; i < 2; i++) {
-      block2tiles.push(block3tiles[0]);
-      block3tiles.shift();
-    }
+
+    block3tiles.unshift(block2tiles[block2tiles.length - 1]);
+    block2tiles.pop();
   }
 
   let isBlock3Vertical = false;
@@ -221,25 +217,70 @@ const drawTelephoneGameScene = (scene, player = null) => {
     }
   });
 
-  // если в 4 блоке последний тайл двойной, перекинуть 2 тайла в 5 блок
+  // если в 4 блоке последний тайл двойной, перекинуть 1 тайл из 5 в 4 блок
   if (
     block4tiles[block4tiles.length - 1].left ==
       block4tiles[block4tiles.length - 1].right &&
     block4tiles[block4tiles.length - 1].id >= 0 &&
-    block4tiles.length > 1 &&
-    !isBlock3Vertical
+    block4tiles.length > 1
   ) {
     if (block4tiles[block4tiles.length - 1].central == true) {
-      expand = { fromBlock: 4, toBlock: 5, left: false, right: false };
+      expand = { fromBlock: 5, toBlock: 4, left: false, right: false };
     }
 
+    block4tiles.push(block5tiles[0]);
+    block5tiles.shift();
+  }
+
+  // если в 5 блоке перв тайл двойной, перекинуть 2 тайла из 5 в 4 блок
+  if (
+    block5tiles[0].left == block5tiles[0].right &&
+    block5tiles[0].right &&
+    block5tiles[0].id >= 0 &&
+    block5tiles.length > 1 &&
+    !isBlock3Vertical
+  ) {
+    if (block5tiles[0].central == true) {
+      expand = { fromBlock: 5, toBlock: 4, left: false, right: false };
+    }
     for (let i = 0; i < 2; i++) {
-      block5tiles.unshift(block4tiles[block4tiles.length - 1]);
-      block4tiles.pop();
+      block4tiles.push(block5tiles[0]);
+      block5tiles.shift();
     }
   }
 
-  // если в 4 блоке перв тайл двойной, перекинуть тайл из 3 блока в 4
+  // если в 2 блоке перв тайл двойной, перекинуть 1 тайл из 1 в 2 блок
+  if (
+    block2tiles[0].left == block2tiles[0].right &&
+    block2tiles[0].right &&
+    block2tiles[0].id >= 0 &&
+    !isBlock3Vertical
+  ) {
+    if (block2tiles[0].central == true) {
+      expand = { fromBlock: 1, toBlock: 2, left: false, right: false };
+    }
+    block2tiles.unshift(block1tiles[block1tiles.length - 1]);
+    block1tiles.pop();
+  }
+
+  // если в 1 блоке перв тайл двойной, перекинуть 2 тайла из 1 в 2 блок
+  if (
+    block1tiles[0].left == block1tiles[0].right &&
+    block1tiles[0].right &&
+    block1tiles[0].id >= 0 &&
+    block1tiles.length > 1 &&
+    !isBlock3Vertical
+  ) {
+    if (block1tiles[0].central == true) {
+      expand = { fromBlock: 1, toBlock: 2, left: false, right: false };
+    }
+    for (let i = 0; i < 2; i++) {
+      block2tiles.unshift(block5tiles[0]);
+      block1tiles.pop();
+    }
+  }
+
+  // если в 4 блоке перв тайл двойной, перекинуть 2 тайла из 4 блока в 3 и из 5 блока в 4
   if (
     block4tiles[0].left == block4tiles[0].right &&
     block4tiles[0].id >= 0 &&
@@ -248,8 +289,14 @@ const drawTelephoneGameScene = (scene, player = null) => {
     if (block4tiles[0].central == true) {
       expand = { fromBlock: 4, toBlock: 3, left: false, right: true };
     }
-    block3tiles.push(block4tiles[0]);
-    block4tiles.shift();
+
+    for (let i = 0; i < 2; i++) {
+      block3tiles.push(block4tiles[0]);
+      block4tiles.shift();
+
+      block4tiles.push(block5tiles[0]);
+      block5tiles.shift();
+    }
   }
 
   // если в 2 блоке последний тайл двойной, перекинуть тайл из 3 блока в 2
@@ -257,28 +304,29 @@ const drawTelephoneGameScene = (scene, player = null) => {
     block2tiles[block2tiles.length - 1].left ==
       block2tiles[block2tiles.length - 1].right &&
     block2tiles[block2tiles.length - 1].id >= 0 &&
-    !isBlock3Vertical
-  ) {
-    if (block2tiles[block2tiles.length - 1].central == true) {
-      expand = { fromBlock: 2, toBlock: 3, left: true, right: false };
-    }
-    block3tiles.unshift(block2tiles[block2tiles.length - 1]);
-    block2tiles.pop();
-  }
-
-  // если в 2 блоке перв тайл двойной, перекинуть 2 тайла в 1 блок
-  if (
-    block2tiles[0].left == block2tiles[0].right &&
-    block2tiles[0].id >= 0 &&
     block2tiles.length > 1 &&
     !isBlock3Vertical
   ) {
-    if (block2tiles[0].central == true) {
+    if (block2tiles[block2tiles.length - 1].central == true) {
+      expand = { fromBlock: 3, toBlock: 2, left: true, right: false };
+    }
+    block2tiles.push(block3tiles[0]);
+    block3tiles.shift();
+  }
+
+  // если в 1 блоке перв тайл двойной, перекинуть 2 тайла в 2 блок
+  if (
+    block1tiles[0].left == block1tiles[0].right &&
+    block1tiles[0].id >= 0 &&
+    block1tiles.length > 1 &&
+    !isBlock3Vertical
+  ) {
+    if (block1tiles[0].central == true) {
       expand = { fromBlock: 2, toBlock: 1, left: false, right: false };
     }
     for (let i = 0; i < 2; i++) {
-      block1tiles.push(block2tiles[0]);
-      block2tiles.shift();
+      block2tiles.unshift(block1tiles[0]);
+      block1tiles.shift();
     }
   }
 
@@ -2022,7 +2070,7 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
         return;
       }
 
-      const user = JSON.parse(localStorage.getItem("user"));
+      let user = JSON.parse(localStorage.getItem("user"));
       // console.log(
       //   user.userId,
       //   window.currentTurn,
@@ -2055,10 +2103,24 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
       if (gameMode == "CLASSIC") {
         if (tableTiles && tableTiles.length > 1) {
           const leftTile = tableTiles[0];
+
+          let leftTileArea = leftTile.querySelector(
+            ".scene-sister-tile-click-area"
+          );
+          if (leftTileArea) {
+            leftTileArea.remove();
+          }
+
           const sceneLeft = +leftTile
             .querySelector(".domino-game-table__tile-half:first-child")
             .classList[1].split("-")[3];
           const rightTile = tableTiles[tableTiles.length - 1];
+          let rightTileArea = rightTile.querySelector(
+            ".scene-sister-tile-click-area"
+          );
+          if (rightTileArea) {
+            rightTileArea.remove();
+          }
           const sceneRight = +rightTile
             .querySelector(".domino-game-table__tile-half:last-child")
             .classList[1].split("-")[3];
@@ -2069,6 +2131,8 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
             (right == sceneLeft && left == sceneRight)
           ) {
             tile.classList.add("sister-highlight");
+            user = JSON.parse(localStorage.getItem("user"));
+
             addTwoTilesEventListeners(
               { left, right, id },
               roomId,
@@ -2184,7 +2248,8 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
         if (sisterCorners.length > 1 && tilesAmount > 1) {
           tile.classList.add("sister-highlight");
 
-          console.log(sisterCorners);
+          console.log(sisterCorners, "sisterCorners");
+          user = JSON.parse(localStorage.getItem("user"));
 
           addTelephoneSisterEventListeners(
             { left, right, id },
@@ -2200,8 +2265,6 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
         }
       }
 
-      // тут доробити
-
       window.ws.send(
         JSON.stringify({
           method: "playDominoTurn",
@@ -2216,6 +2279,119 @@ export const tilesController = (roomId, tableId, playerMode, gameMode) => {
     };
   }
 };
+
+// const addTelephoneSisterEventListeners = (
+//   tile,
+//   roomId,
+//   tableId,
+//   playerMode,
+//   gameMode,
+//   sisterCorners,
+//   user
+// ) => {
+//   // функция для отправки систр тайла и очистки после нажатия
+//   function telephoneSisterTilesListener(sisterTile, thisTile) {
+//     return function () {
+//       console.log("поставилось через систер тайл");
+//       if (!thisTile.classList.contains("highlight")) {
+//         return;
+//       }
+//       window.ws.send(
+//         JSON.stringify({
+//           method: "playDominoTurn",
+//           userId: +user.userId,
+//           roomId,
+//           tableId,
+//           playerMode,
+//           gameMode,
+//           tile,
+//           sisterTile,
+//         })
+//       );
+
+//       let tiles = document.querySelectorAll(".domino-game__tile");
+//       tiles.forEach((tile) => {
+//         tile.classList.add("disabled");
+//         tile.classList.remove("highlight");
+//       });
+
+//       let sceneTiles = document.querySelectorAll(".domino-game-table__tile");
+
+//       sceneTiles.forEach((sceneTile) => {
+//         sceneTile.removeEventListener(
+//           "click",
+//           telephoneSisterTilesListener(sisterTile, thisTile)
+//         );
+
+//         sceneTile.classList.remove("highlight", `finger-left`);
+//         sceneTile.classList.remove("sister-highlight");
+//       });
+
+//       sisterCorners.forEach((corner) => {
+//         let sisterTile = corner.side;
+//         const sisterTileElement = document.querySelector(
+//           `.domino-game-table__tile[tileid="${corner.id}"]`
+//         );
+//         if (sisterTileElement) {
+//           sisterTileElement.classList.remove("highlight");
+//           sisterTileElement.classList.remove("sister-highlight");
+//           sisterTileElement.removeEventListener(
+//             "click",
+//             telephoneSisterTilesListener(sisterTile, thisTile)
+//           );
+//         }
+//       });
+//     };
+//   }
+
+//   // ставим новые лисенеры
+//   sisterCorners.forEach((corner) => {
+//     let sisterTile = corner.side;
+//     console.log(corner, "CORENT OPKOP ========");
+//     const sisterTileElement = document.querySelector(
+//       `.domino-game-table__tile[tileid="${corner.id}"]`
+//     );
+//     if (sisterTileElement) {
+//       // check if sisterTileElement is double and contains class central
+//       const sisterTileLeft = +sisterTileElement
+//         .querySelector(".domino-game-table__tile-half:first-child")
+//         .classList[1].split("-")[3];
+
+//       const sisterTileRight = +sisterTileElement
+//         .querySelector(".domino-game-table__tile-half:last-child")
+//         .classList[1].split("-")[3];
+
+//       const isTileAvailable = true;
+
+//       if (sisterTileLeft == sisterTileRight) {
+//         // get tiles that are on the left and on the right of sisterTileElement in scene
+//         const scene = JSON.parse(localStorage.getItem("dominoGameScene"));
+//         const middleRow = scene[Math.floor(scene.length / 2)];
+//         const leftTile = middleRow[middleRow.indexOf(corner) - 1];
+//         const rightTile = middleRow[middleRow.indexOf(corner) + 1];
+
+//         if (
+//           leftTile &&
+//           rightTile &&
+//           leftTile?.id >= 0 &&
+//           rightTile?.id >= 0 &&
+//           !sisterTileElement.classList.contains("central")
+//         ) {
+//           isTileAvailable = false;
+//         }
+//       }
+//       if (isTileAvailable) {
+//         sisterTileElement.classList.add("highlight");
+//         const clickHandler = telephoneSisterTilesListener(
+//           sisterTile,
+//           sisterTileElement
+//         );
+
+//         sisterTileElement.addEventListener("click", clickHandler);
+//       }
+//     }
+//   });
+// };
 
 const addTelephoneSisterEventListeners = (
   tile,
@@ -2255,31 +2431,44 @@ const addTelephoneSisterEventListeners = (
       let sceneTiles = document.querySelectorAll(".domino-game-table__tile");
 
       sceneTiles.forEach((sceneTile) => {
-        sceneTile.removeEventListener(
-          "click",
-          telephoneSisterTilesListener(sisterTile, thisTile)
-        );
-
+        if (sceneTile) {
+          let sceneTileClickArea = sceneTile.querySelector(
+            ".scene-sister-tile-click-area"
+          );
+          if (sceneTileClickArea) {
+            sceneTileClickArea.remove();
+          }
+        }
         sceneTile.classList.remove("highlight", `finger-left`);
         sceneTile.classList.remove("sister-highlight");
       });
 
       sisterCorners.forEach((corner) => {
-        let sisterTile = corner.side;
         const sisterTileElement = document.querySelector(
           `.domino-game-table__tile[tileid="${corner.id}"]`
         );
         if (sisterTileElement) {
           sisterTileElement.classList.remove("highlight");
           sisterTileElement.classList.remove("sister-highlight");
-          sisterTileElement.removeEventListener(
-            "click",
-            telephoneSisterTilesListener(sisterTile, thisTile)
-          );
         }
       });
     };
   }
+
+  // чистим все тайлики от лисенеров
+  let sceneTiles = document.querySelectorAll(".domino-game-table__tile");
+  sceneTiles.forEach((sceneTile) => {
+    if (sceneTile) {
+      let sceneTileClickArea = sceneTile.querySelector(
+        ".scene-sister-tile-click-area"
+      );
+      if (sceneTileClickArea) {
+        sceneTileClickArea.remove();
+      }
+    }
+    sceneTile.classList.remove("highlight", `finger-left`);
+    sceneTile.classList.remove("sister-highlight");
+  });
 
   // ставим новые лисенеры
   sisterCorners.forEach((corner) => {
@@ -2288,7 +2477,14 @@ const addTelephoneSisterEventListeners = (
     const sisterTileElement = document.querySelector(
       `.domino-game-table__tile[tileid="${corner.id}"]`
     );
+
     if (sisterTileElement) {
+      let existingTileClickArea = sisterTileElement.querySelector(
+        ".scene-sister-tile-click-area"
+      );
+      if (existingTileClickArea) {
+        existingTileClickArea.remove();
+      }
       // check if sisterTileElement is double and contains class central
       const sisterTileLeft = +sisterTileElement
         .querySelector(".domino-game-table__tile-half:first-child")
@@ -2324,7 +2520,13 @@ const addTelephoneSisterEventListeners = (
           sisterTileElement
         );
 
-        sisterTileElement.addEventListener("click", clickHandler);
+        let sisterTileEmelementClickArea = document.createElement("div");
+        sisterTileEmelementClickArea.classList.add(
+          "scene-sister-tile-click-area"
+        );
+        sisterTileElement.appendChild(sisterTileEmelementClickArea);
+
+        sisterTileEmelementClickArea.addEventListener("click", clickHandler);
       }
     }
   });
@@ -2362,6 +2564,14 @@ const addTwoTilesEventListeners = (
       // удалить подсветку всех
       let tiles = document.querySelectorAll(".domino-game__tile");
       tiles.forEach((tile) => {
+        if (tile) {
+          let tileClickArea = tile.querySelector(
+            ".scene-sister-tile-click-area"
+          );
+          if (tileClickArea) {
+            tileClickArea.remove();
+          }
+        }
         tile.classList.add("disabled");
         tile.classList.remove("highlight");
       });
@@ -2375,15 +2585,100 @@ const addTwoTilesEventListeners = (
     };
   }
 
+  let leftTileClickArea = leftTile.querySelector(
+    ".scene-sister-tile-click-area"
+  );
+  if (leftTileClickArea) {
+    leftTileClickArea.remove();
+  }
+
+  let rightTileClickArea = rightTile.querySelector(
+    ".scene-sister-tile-click-area"
+  );
+  if (rightTileClickArea) {
+    rightTileClickArea.remove();
+  }
+
+  let tileClickAreaLeft = document.createElement("div");
+  tileClickAreaLeft.classList.add("scene-sister-tile-click-area");
+  leftTile.appendChild(tileClickAreaLeft);
+  console.log("left tile after appendind", leftTile);
+  let tileClickAreaRight = document.createElement("div");
+  tileClickAreaRight.classList.add("scene-sister-tile-click-area");
+  rightTile.appendChild(tileClickAreaRight);
+  console.log("right tile after appendind", rightTile);
+
   const leftTileListener = twoTilesListener("left", leftTile);
   const rightTileListener = twoTilesListener("right", rightTile);
 
   leftTile.classList.add("highlight", "finger-left");
   rightTile.classList.add("highlight", "finger-right");
 
-  leftTile.addEventListener("click", leftTileListener);
-  rightTile.addEventListener("click", rightTileListener);
+  console.log(leftTile, "left");
+  console.log(rightTile, "right");
+
+  leftTileClickArea = leftTile.querySelector(".scene-sister-tile-click-area");
+  rightTileClickArea = rightTile.querySelector(".scene-sister-tile-click-area");
+  console.log(leftTileClickArea, "area left");
+  console.log(rightTileClickArea, "area right");
+  leftTileClickArea.addEventListener("click", leftTileListener);
+  rightTileClickArea.addEventListener("click", rightTileListener);
 };
+
+// const addTwoTilesEventListeners = (
+//   tile,
+//   roomId,
+//   tableId,
+//   playerMode,
+//   gameMode,
+//   leftTile,
+//   rightTile,
+//   user,
+//   sisterTileElement
+// ) => {
+//   function twoTilesListener(sisterTile, thisTile) {
+//     return function () {
+//       if (!thisTile.classList.contains("highlight")) {
+//         return;
+//       }
+//       window.ws.send(
+//         JSON.stringify({
+//           method: "playDominoTurn",
+//           userId: +user.userId,
+//           roomId,
+//           tableId,
+//           playerMode,
+//           gameMode,
+//           tile,
+//           sisterTile,
+//         })
+//       );
+
+//       // удалить подсветку всех
+//       let tiles = document.querySelectorAll(".domino-game__tile");
+//       tiles.forEach((tile) => {
+//         tile.classList.add("disabled");
+//         tile.classList.remove("highlight");
+//       });
+
+//       leftTile.removeEventListener("click", leftTileListener);
+//       rightTile.removeEventListener("click", rightTileListener);
+
+//       leftTile.classList.remove("highlight", "finger-left");
+//       rightTile.classList.remove("highlight", "finger-right");
+//       sisterTileElement.classList.remove("sister-highlight");
+//     };
+//   }
+
+//   const leftTileListener = twoTilesListener("left", leftTile);
+//   const rightTileListener = twoTilesListener("right", rightTile);
+
+//   leftTile.classList.add("highlight", "finger-left");
+//   rightTile.classList.add("highlight", "finger-right");
+
+//   leftTile.addEventListener("click", leftTileListener);
+//   rightTile.addEventListener("click", rightTileListener);
+// };
 
 export const openTilesMarket = (market) => {
   let mainContainer = document.querySelector(".main__container");
@@ -2499,6 +2794,7 @@ export const getMarketTile = (tile, msg) => {
     // console.log(scene);
 
     scene = JSON.parse(scene);
+    console.log(scene, "SCENE");
     const tilesAmount = countTiles(scene);
 
     let middleRow = scene[Math.floor(scene.length / 2)];
@@ -3742,9 +4038,9 @@ export const updatePlayerScore = (userId, score, addedScore) => {
       scoreNumber.classList.add("score-number");
       scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       table.appendChild(scoreNumber);
-      setTimeout(() => {
-        scoreNumber.remove();
-      }, 1800);
+      // setTimeout(() => {
+      //   scoreNumber.remove();
+      // }, 1800);
     }
   } else {
     // domino-game-table__enemy-player domino-enemy-player domino-enemy-player-3
@@ -3763,9 +4059,9 @@ export const updatePlayerScore = (userId, score, addedScore) => {
       scoreNumber.classList.add("enemy-score-number");
       scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       enemyBlock.appendChild(scoreNumber);
-      setTimeout(() => {
-        scoreNumber.remove();
-      }, 1800);
+      // setTimeout(() => {
+      //   scoreNumber.remove();
+      // }, 1800);
     }
   }
 };

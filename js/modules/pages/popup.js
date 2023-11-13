@@ -968,17 +968,17 @@ const formPopupTiles = (
     });
     tilesBlock.innerHTML += `
       <div>
-        <p style="width:100%;background-color:#000;height:2px;margin:10px 0;"></p>
+        <p style="width:100%;background-color:#fff;height:2px;margin:10px 0;"></p>
           <div style="display:flex;justify-content:space-between;">
             <p>
-              Игрок ${playerTiles.username}.
+              ${siteLanguage.popups.player} ${playerTiles.username}.
               ${
                 (playerTilesPoints && !isClassic) || showPoints
                   ? siteLanguage.popups.tiles + " " + playerTilesPoints
                   : ""
               }
             </p>
-            <p>
+            <p class="domino-lose-popup-score">
               ${!isClassic && playerTiles.score ? `(${playerTiles.score})` : ""}
             </p>
           </div>
@@ -1079,7 +1079,7 @@ export const openDominoTelephoneRoundFinishPopup = (
   }
   const main = document.querySelector(".main__container");
   let popupElement = document.createElement("div");
-  popupElement.classList.add("popup");
+  popupElement.classList.add("popup", "telephone-finish-popup");
 
   setTimeout(() => {
     close(popupElement);
@@ -1103,15 +1103,13 @@ export const openDominoTelephoneRoundFinishPopup = (
   });
 
   popupElement.innerHTML = `
-    <div class="popup">
-      <div class="popup__body">
-        <div class="popup__content">
-          <div class="popup__text domino-lose-popup__text">
-            ${siteLanguage.popups.roundResults}
-            <br>
-            ${playersScoreList}
-            <div class="domino-lose-popup__tiles">
-            </div>
+    <div class="popup__body">
+      <div class="popup__content">
+        <div class="popup__text domino-lose-popup__text">
+          ${siteLanguage.popups.roundResults}
+          <br>
+          ${playersScoreList}
+          <div class="domino-lose-popup__tiles">
           </div>
         </div>
       </div>

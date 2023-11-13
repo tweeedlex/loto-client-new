@@ -278,8 +278,8 @@
 .domino-game-page
   .domino-game-page__body
   .domino-game-table__enemy-player.domino-enemy-player-3 {
-  top: -5%;
-  right: -2%;
+  top: -7%;
+  right: 7%;
   /* transform: translate(-50%, 0); */
 }
 
@@ -382,7 +382,6 @@
   }
 
   .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
-    max-width: 140px;
     width: 100%;
   }
   .domino-game-page .domino-game-page__body .domino-enemy-player__img {
@@ -449,7 +448,6 @@
   }
 
   .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
-    max-width: 140px;
     width: 100%;
   }
   .domino-game-page .domino-game-page__body .domino-enemy-player__img {
@@ -489,7 +487,6 @@
 
 @media (max-width: 600px) {
   .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
-    max-width: max-content;
     padding: 8px 12px;
   }
 
@@ -498,7 +495,6 @@
   }
 
   .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
-    max-width: 100px;
     padding: 5px 7px;
   }
 
@@ -531,10 +527,18 @@
 
 @media (max-width: 475px) {
   .domino-game-page .domino-game-page__body .domino-game-table__enemy-player {
-    max-width: max-content;
     padding: 5px 7px;
     /* align-items: center; */
   }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-3 {
+    /* top: -5%;
+    left: -5%; */
+    /* transform: translate(-50%, 0); */
+  }
+
   .domino-game-page .domino-game-page__body .domino-enemy-player__img {
     /* width: 35px;
     height: 35px; */
@@ -542,6 +546,29 @@
   .domino-game-page .domino-game-page__body .domino-enemy-player__img img {
     /* width: 35px;
     height: 35px; */
+  }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-1 {
+    top: 0;
+    left: 42%;
+    transform: translate(-50%, -70%);
+  }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-2 {
+    top: -7%;
+    left: -9%;
+    /* transform: translate(-50%, 0); */
+  }
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-3 {
+    top: -7%;
+    right: 9%;
+    /* transform: translate(-50%, 0); */
   }
 
   .domino-game-page .domino-game-page__body .domino-enemy-player__img span {
@@ -567,17 +594,6 @@
     border-radius: 5px;
     font-size: 10px;
   }
-
-  .domino-game-page
-    .domino-game-page__body
-    .domino-game-table__enemy-player.domino-enemy-player-2 {
-    left: -13%;
-  }
-  .domino-game-page
-    .domino-game-page__body
-    .domino-game-table__enemy-player.domino-enemy-player-3 {
-    right: -5%;
-  }
 }
 
 @media (max-width: 376px) {
@@ -587,6 +603,7 @@
 
     height: 37px;
   }
+
   .domino-game-page .domino-game-page__body .domino-enemy-player__img img {
     /* width: 37px;
     height: 37px; */
@@ -601,6 +618,24 @@
   .domino-game-page .domino-game-page__body .domino-enemy-player__img span {
     bottom: -8px;
     right: -3px;
+  }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-1 {
+    top: 0%;
+  }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-2 {
+    top: -5%;
+  }
+
+  .domino-game-page
+    .domino-game-page__body
+    .domino-game-table__enemy-player.domino-enemy-player-3 {
+    top: -5%;
   }
 }
 
@@ -1409,6 +1444,15 @@
   position: relative;
 }
 
+.scene-sister-tile-click-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* background-color: #3d2a1c45; */
+}
+
 /* .domino-game-table__tile.finger-left::before {
     content: url("../../img/domino/domino-finger.png");
     position: absolute;
@@ -1887,16 +1931,20 @@
   position: absolute;
   bottom: -28px;
   transform: translate(-50%, 0);
-  left: 50%;
+  left: 60%;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 24px;
+  -webkit-text-stroke: 1px #000;
   color: #f8f2b6;
   z-index: 4;
-  width: 100%;
-  text-align: center;
+  min-width: max-content;
   text-transform: uppercase;
   transform: scale(1) translate(50, -100%);
   text-shadow: 5px 0 8px rgba(0, 0, 0, 0.75);
+}
+
+.domino-enemy-player-2 .enemy-score-number {
+  left: 100%;
 }
 
 @keyframes smoothScale {
@@ -1913,8 +1961,8 @@
 
 .score-number {
   position: absolute;
-  top: 25%;
-  left: 50%;
+  bottom: 5%;
+  left: 10%;
   font-weight: 700;
   -webkit-text-stroke: 1px #000;
   font-size: 24px;

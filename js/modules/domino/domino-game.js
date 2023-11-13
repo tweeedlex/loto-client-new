@@ -4038,9 +4038,9 @@ export const updatePlayerScore = (userId, score, addedScore) => {
       scoreNumber.classList.add("score-number");
       scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       table.appendChild(scoreNumber);
-      // setTimeout(() => {
-      //   scoreNumber.remove();
-      // }, 1800);
+      setTimeout(() => {
+        scoreNumber.remove();
+      }, 1800);
     }
   } else {
     // domino-game-table__enemy-player domino-enemy-player domino-enemy-player-3
@@ -4059,9 +4059,9 @@ export const updatePlayerScore = (userId, score, addedScore) => {
       scoreNumber.classList.add("enemy-score-number");
       scoreNumber.innerHTML = `+ ${addedScore} ${siteLanguage.popups.points}`;
       enemyBlock.appendChild(scoreNumber);
-      // setTimeout(() => {
-      //   scoreNumber.remove();
-      // }, 1800);
+      setTimeout(() => {
+        scoreNumber.remove();
+      }, 1800);
     }
   }
 };

@@ -4,6 +4,7 @@ import * as impHttp from "../http.js";
 import * as impAudio from "../audio.js";
 import * as impLocalization from "../localize.js";
 import * as impLotoNav from "../loto/loto-navigation.js";
+import { getDominoRoomBetInfo } from "../domino/domino-navigation.js";
 
 // 100 предупреждения
 // 200 выиграш
@@ -626,6 +627,8 @@ export const openDominoWaitingPopup = async (
   }
   const siteLanguage = window.siteLanguage;
 
+  const { bet } = getDominoRoomBetInfo(dominoRoomId);
+
   const body = document.querySelector("body");
   let popupElement = document.createElement("div");
   popupElement.classList.add("popup");
@@ -635,17 +638,22 @@ export const openDominoWaitingPopup = async (
         <div class="popup__content domino-waiting-popup">
           <div class="popup__header">
             <div class="popup__timer">
-            <img src="img/timer-icon.png" alt="timer" /> 
-            <span class="domino-waiting-popup__timer">00:00</span>
-          </div>
+              <img src="img/timer-icon.png" alt="timer" /> 
+              <span class="domino-waiting-popup__timer">00:00</span>
+            </div>
+            <p class="domino-waiting-popup-bet">${bet.toFixed(2)} ₼</p>
           </div>
           <div class="popup__text domino-waiting-popup__text">
             <p><span class="domino-waiting-popup__online">${online}</span>/${playerMode}</p>
             <p>${siteLanguage.popups.findingPlayers}</p>
           </div>
           <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
-            <button class="domino-waiting-popup__button domino-waiting-popup__button-room">${siteLanguage.popups.leaveRoom}</button>
-            <button class="domino-waiting-popup__button domino-waiting-popup__button-games">${siteLanguage.popups.leaveToGameMenu}</button>
+            <button class="domino-waiting-popup__button domino-waiting-popup__button-room">${
+              siteLanguage.popups.leaveRoom
+            }</button>
+            <button class="domino-waiting-popup__button domino-waiting-popup__button-games">${
+              siteLanguage.popups.leaveToGameMenu
+            }</button>
           </div>
         </div>
       </div>
@@ -971,14 +979,16 @@ const formPopupTiles = (
         <p style="width:100%;background-color:#fff;height:2px;margin:10px 0;"></p>
           <div style="display:flex;justify-content:space-between;">
             <p>
-              ${siteLanguage.popups.player} ${playerTiles.username}.
+              ${siteLanguage.popups.player} <span class="text-gold">${
+      playerTiles.username
+    }</span>.
               ${
                 (playerTilesPoints && !isClassic) || showPoints
                   ? siteLanguage.popups.tiles + " " + playerTilesPoints
                   : ""
               }
             </p>
-            <p class="domino-lose-popup-score">
+            <p class="domino-lose-popup-score text-gold">
               ${!isClassic && playerTiles.score ? `(${playerTiles.score})` : ""}
             </p>
           </div>

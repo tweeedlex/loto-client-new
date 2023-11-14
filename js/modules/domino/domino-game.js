@@ -264,18 +264,20 @@ const drawTelephoneGameScene = (scene, player = null) => {
   }
 
   // если в 1 блоке перв тайл двойной, перекинуть 2 тайла из 1 в 2 блок
+  console.log(block1tiles);
   if (
-    block1tiles[0].left == block1tiles[0].right &&
-    block1tiles[0].right &&
-    block1tiles[0].id >= 0 &&
+    block1tiles[block1tiles.length - 1].left ==
+      block1tiles[block1tiles.length - 1].right &&
+    block1tiles[block1tiles.length - 1].right &&
+    block1tiles[block1tiles.length - 1].id >= 0 &&
     block1tiles.length > 1 &&
     !isBlock3Vertical
   ) {
-    if (block1tiles[0].central == true) {
+    if (block1tiles[block1tiles.length - 1].central == true) {
       expand = { fromBlock: 1, toBlock: 2, left: false, right: false };
     }
     for (let i = 0; i < 2; i++) {
-      block2tiles.unshift(block5tiles[0]);
+      block2tiles.unshift(block1tiles[block1tiles.length - 1]);
       block1tiles.pop();
     }
   }

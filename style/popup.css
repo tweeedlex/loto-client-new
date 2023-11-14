@@ -1137,6 +1137,27 @@
   color: #ffd900 !important;
 }
 
+.text-gold {
+  color: #ffd900 !important;
+}
+
+.domino-waiting-popup .popup__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.domino-waiting-popup-bet {
+  /* make a pretty text */
+  background: linear-gradient(180deg, #78010b 0%, #d32433 100%);
+  border-radius: 10px;
+  padding: 6px 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
 .domino-lose-popup {
   border-radius: 10px;
   background: linear-gradient(

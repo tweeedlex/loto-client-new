@@ -277,7 +277,7 @@ function formTwoPlayersMenu(main, main__container, ws, gameMode) {
       <div class="domino-room-content__tables">
         <div class="domino-room-content__table" tableId=1>
           <div class="domino-room-content__table-image">
-            <div class=" domino-room-table-half domino-room-table-part "></div>
+            <div class="domino-room-table-half domino-room-table-part"></div>
             <div class="domino-room-table-half domino-room-table-part"></div>
           </div>
           <div class="domino-room-content__table-info">
@@ -291,7 +291,7 @@ function formTwoPlayersMenu(main, main__container, ws, gameMode) {
 
         <div class="domino-room-content__table" tableId=2>
           <div class="domino-room-content__table-image">
-            <div class="domino-room-table-half domino-room-table-part "></div>
+            <div class="domino-room-table-half domino-room-table-part"></div>
             <div class="domino-room-table-half domino-room-table-part"></div>
           </div>
           <div class="domino-room-content__table-info">
@@ -589,6 +589,10 @@ export async function addDominoRoomsInfo(msg) {
       }
       let tableHalfs = table.querySelectorAll(".domino-room-table-part");
       tableHalfs.forEach((item) => [item.classList.remove("filled")]);
+      const timerBlock = table.querySelector(".domino-room-table-info__timer");
+      if (timerBlock) {
+        timerBlock.innerHTML = "00:00";
+      }
     });
   });
 
@@ -836,9 +840,15 @@ export function addOnlineToTable(msg) {
       </div>
     `;
 
+    peopleItems = playersOnline.querySelectorAll(
+      ".domino-room-table-info__players-item"
+    );
+
     for (let i = 0; i < peopleItems.length; i++) {
       let roomHalf = roomHalfs[i];
-      roomHalf.classList.add("filled");
+      if (roomHalf) {
+        roomHalf.classList.add("filled");
+      }
     }
 
     // playersOnline.innerHTML = Number(playersOnline.innerHTML) + 1;
